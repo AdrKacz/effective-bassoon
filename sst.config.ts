@@ -23,10 +23,15 @@ export default $config({
   },
   async run() {
     const bucket = new sst.aws.Bucket("HonoBucket")
+
+    const auth = new sst.aws.Auth("Auth", {
+      issuer: "auth/index.handler"
+    })
+
     const hono = new sst.aws.Function("Hono", {
       url: true,
       handler: "src/index.handler",
-      link: [bucket],
+      link: [bucket, auth],
       permissions: [
         {
           actions: ["bedrock:InvokeModel"],
@@ -47,6 +52,7 @@ export default $config({
       indexPage: "index.html",
       environment: {
         VITE_API_URL: hono.url,
+        VITE_AUTH_URL: auth.url,
       }
     });
 
@@ -54,6 +60,7 @@ export default $config({
       bucket: bucket.arn,
       hono: hono.url,
       web: web.url,
+      auth: auth.url,
     }
   }
 });

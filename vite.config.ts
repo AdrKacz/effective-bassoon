@@ -1,5 +1,6 @@
 import { resolve } from 'path'
 import { globSync } from 'glob'
+import { empty } from 'valibot'
 
 const files = globSync(
     ['web/**/*.html', 'web/**/*.css', 'web/**/*.mjs'],
@@ -16,5 +17,9 @@ if (jsFiles.length > 0) {
 export default {
     // config options
     root: 'web',
-    build: { rollupOptions: { input: files } },
+    build: {
+        emptyOutDir: true,
+        outDir: 'dist',
+        rollupOptions: { input: files }
+    },
 }
