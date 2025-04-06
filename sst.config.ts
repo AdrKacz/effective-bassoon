@@ -40,8 +40,14 @@ export default $config({
         command: "npm run web:build",
         output: "web/dist",
       },
+      dev: {
+        command: "npm run web:dev",
+      },
       errorPage: "404.html",
       indexPage: "index.html",
+      environment: {
+        VITE_API_URL: hono.url,
+      }
     });
 
     return {
