@@ -7,13 +7,18 @@
     "build": "esbuild --bundle --outfile=./dist/index.js --platform=node --target=node20 ./src/index.ts",
     "deploy": "run-s build zip update",
     "update": "aws lambda update-function-code --zip-file fileb://lambda.zip --function-name hello",
-    "zip": "zip -j lambda.zip dist/index.js"
+    "zip": "zip -j lambda.zip dist/index.js",
+    "web:build": "vite build",
+    "web:dev": "vite dev",
+    "web:preview": "vite preview"
   },
   "devDependencies": {
     "@types/aws-lambda": "8.10.148",
     "@types/node": "^22.14.0",
     "esbuild": "^0.21.4",
-    "npm-run-all2": "^6.2.0"
+    "glob": "^11.0.1",
+    "npm-run-all2": "^6.2.0",
+    "vite": "^6.2.5"
   },
   "dependencies": {
     "@aws-sdk/client-bedrock-runtime": "^3.782.0",

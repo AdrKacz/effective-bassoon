@@ -53,17 +53,11 @@ def replace(file, pattern, replacement):
 
 # Replace script tag in HTML files
 for html_file in html_files:
-    replace(html_file,
-            r'<script\s+src="(.*)?smart-forms\.min\.js">',
-            r'<script src="\1smart-forms.mjs" type="module">')
-
-    replace(html_file,
-            r'<script\s+src="(.*)?bs-init\.js">',
-            r'<script src="\1bs-init.mjs" type="module">')
-    
-    replace(html_file,
-            r'<script\s+src="(.*)?startup-modern\.js">',
-            r'<script src="\1startup-modern.mjs" type="module">')
+    special_scripts = ["smart-forms", "bs-init", "startup-modern", "bold-and-dark.js"]
+    for special_script in special_scripts:
+        replace(html_file,
+                r'<script\s+src="(.*)?' + special_script + r'\.js">',
+                r'<script src="\1' + special_script + r'.mjs" type="module">')
     
     # Remove .html extension from links
     replace(html_file,
