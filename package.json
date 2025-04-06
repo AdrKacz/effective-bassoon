@@ -16,6 +16,9 @@
     "npm-run-all2": "^6.2.0"
   },
   "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.782.0",
+    "@aws-sdk/client-s3": "^3.782.0",
+    "@aws-sdk/s3-request-presigner": "^3.782.0",
     "hono": "^4.7.5",
     "sst": "3.12.3"
   }
