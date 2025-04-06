@@ -3,10 +3,11 @@ import { globSync } from 'glob'
 
 const files = globSync(
     ['web/**/*.html', 'web/**/*.css', 'web/**/*.mjs'],
-    { ignore: ['dist/**', 'node_modules/**', 'vite.config.ts*'] })
+    { ignore: ['web/dist/**'] })
     .map((file) => resolve(__dirname, file))
 
-const jsFiles = globSync('web/**/*.js', { ignore: ['dist/**', 'node_modules/**', 'vite.config.ts*'] })
+console.log('Vite config files:', files)
+const jsFiles = globSync('web/**/*.js', { ignore: ['web/dist/**'] })
 if (jsFiles.length > 0) {
     throw new Error(`JavaScript files are not allowed in the web package: ${jsFiles.join(', ')}`)
 }
@@ -14,6 +15,6 @@ if (jsFiles.length > 0) {
 /** @type {import('vite').UserConfig} */
 export default {
     // config options
+    root: 'web',
     build: { rollupOptions: { input: files } },
-    base: 'web',
 }

@@ -17,9 +17,10 @@ def move_file(old_file_path, new_file_path):
         print(f"File renamed: {old_file_path} -> {new_file_path}")
     except FileNotFoundError:
         print(f"File not found: {old_file_path}")
-move_file(os.path.join(folder_path, "assets/js/smart-forms.min.js"), os.path.join(folder_path, "assets/js/smart-forms.mjs"))
-move_file(os.path.join(folder_path, "assets/js/bs-init.js"), os.path.join(folder_path, "assets/js/bs-init.mjs"))
-move_file(os.path.join(folder_path, "assets/js/startup-modern.js"), os.path.join(folder_path, "assets/js/startup-modern.mjs"))
+    
+special_scripts = ["smart-forms", "bs-init", "bold-and-dark"]
+for script in special_scripts:
+    move_file(os.path.join(folder_path, "assets/js/" + script + ".js"), os.path.join(folder_path, "assets/js/" + script + ".mjs"))
 move_file(os.path.join(folder_path, "sitemap.xml"), os.path.join(folder_path, "public/sitemap.xml"))
 
 # Task 2: Replace script tag in HTML files
@@ -53,11 +54,10 @@ def replace(file, pattern, replacement):
 
 # Replace script tag in HTML files
 for html_file in html_files:
-    special_scripts = ["smart-forms", "bs-init", "startup-modern", "bold-and-dark.js"]
-    for special_script in special_scripts:
+    for script in special_scripts:
         replace(html_file,
-                r'<script\s+src="(.*)?' + special_script + r'\.js">',
-                r'<script src="\1' + special_script + r'.mjs" type="module">')
+                r'<script\s+src="(.*)?' + script + r'\.js">',
+                r'<script src="\1' + script + r'.mjs" type="module">')
     
     # Remove .html extension from links
     replace(html_file,
