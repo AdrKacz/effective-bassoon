@@ -52,7 +52,7 @@ async function setup() {
             const { access, refresh } = exchanged.tokens
             localStorage.setItem(ACCESS_TOKEN_KEY, access)
             localStorage.setItem(REFRESH_TOKEN_KEY, refresh)
-            loginButton.style.display = 'none';
+            loginButton.classList.add('d-none')
             return
         }
     }
@@ -87,8 +87,8 @@ async function setup() {
     logoutButton.classList.add('d-none')
     loginButton.classList.remove('d-none')
     document.querySelectorAll('nav .private-tab').forEach(item => item.classList.add('d-none'))
-    const { challenge, url } = await client.authorize(window.location.href, "code", { pkce: true })
-    localStorage.setItem(REDIRECT_URI_KEY, window.location.href);
+    const { challenge, url } = await client.authorize(window.location.origin + "/studio", "code", { pkce: true })
+    localStorage.setItem(REDIRECT_URI_KEY, window.location.origin + "/studio");
     localStorage.setItem(CHALLENGE_VERIFIER_KEY, challenge.verifier);
     loginButton.href = url;
 }

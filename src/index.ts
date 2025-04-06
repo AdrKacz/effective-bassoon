@@ -7,10 +7,27 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3"
 import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime"
 import { subjects } from '../auth/subjects'
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient, PutCommand, QueryCommand, QueryCommandInput, GetCommand } from "@aws-sdk/lib-dynamodb";
+import sharp from 'sharp'
 
 const auth = createClient({
   clientID: "hono",
   issuer: Resource.Auth.url,
+})
+
+const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({}), {
+  marshallOptions: {
+    convertEmptyValues: true,
+    removeUndefinedValues: true,
+    convertClassInstanceToMap: true,
+    convertTopLevelContainer: true,
+    allowImpreciseNumbers: false
+  },
+  unmarshallOptions: {
+    wrapNumbers: true,
+    convertWithoutMapWrapper: true
+  }
 })
 
 // Bedrock only supports Titan v2 in us-east-1 and us-west-2
@@ -45,7 +62,10 @@ app.use(
 )
 
 app.post('/image', async (c) => {
-  // const userId = c.get('user_id') // Already verified by bearerAuth
+  const userId = c.get('user_id')
+  if (!userId) {
+    return c.text('Unauthorized', 401)
+  }
   const body = await c.req.json()
   if (!body || !body.prompt || !body.ratio) {
     return c.text('Missing required fields: prompt, ratio', 400)
@@ -114,17 +134,42 @@ app.post('/image', async (c) => {
     }
     const image = responseBody.images[0];
     const imageBuffer = Buffer.from(image, 'base64');
-    const fileName = `image-${Date.now()}.png`;
+    const smallImageBuffer = await sharp(imageBuffer)
+      .resize({ height: 300, fit: 'cover' })
+      .toFormat('png')
+      .toBuffer();
+    const now = (new Date()).toISOString()
+    const fileName = `users/${userId}/images/${now}.png`;
+    const smallFileName = `users/${userId}/images/${now}-small.png`;
     await bucket.send(new PutObjectCommand({
-      Bucket: Resource.HonoBucket.name,
+      Bucket: Resource.Bucket.name,
       Key: fileName,
       Body: imageBuffer,
       ContentType: 'image/png',
     }));
-    console.log(`Image uploaded to S3: ${fileName}`);
+    await bucket.send(new PutObjectCommand({
+      Bucket: Resource.Bucket.name,
+      Key: smallFileName,
+      Body: smallImageBuffer,
+      ContentType: 'image/png',
+    }));
+    console.log(`Images uploaded to S3: ${fileName} and ${smallFileName}`);
+    // Save metadata to DynamoDB (userId, fileName, date, prompt, ratio)
+    await ddb.send(new PutCommand({
+      TableName: Resource.Table.name,
+      Item: {
+        pk: `user#${userId}`,
+        sk: `image#${fileName}`,
+        date: now,
+        prompt,
+        ratio,
+        smallFileName,
+      },
+    }));
+
     // Generate a signed URL for the uploaded image
     const command = new GetObjectCommand({
-      Bucket: Resource.HonoBucket.name,
+      Bucket: Resource.Bucket.name,
       Key: fileName,
     });
     const url = await getSignedUrl(bucket, command, { expiresIn: 3600 }); // 1 hour expiration
@@ -135,5 +180,116 @@ app.post('/image', async (c) => {
     return c.text("Cannot generate image", 500);
   }
 })
+
+app.get('/images', async (c) => {
+  const userId = c.get('user_id')
+  if (!userId) {
+    return c.text('Unauthorized', 401)
+  }
+  const params = c.req.query()
+  if (!params || !params.limit) {
+    return c.text('Missing required fields: limit', 400)
+  }
+  const limit = parseInt(params.limit)
+  if (isNaN(limit) || limit < 1 || limit > 25) {
+    return c.text('Limit must be a number between 1 and 25', 400)
+  }
+  const start = params.start ? params.start : null
+  const startKey = start ? JSON.parse(start) : null
+  const query: QueryCommandInput = {
+    TableName: Resource.Table.name,
+    KeyConditionExpression: '#pk=:pk and begins_with(#sk, :sk)',
+    ExpressionAttributeNames: {
+      '#pk': 'pk',
+      '#sk': 'sk',
+    },
+    ExpressionAttributeValues: {
+      ':pk': `user#${userId}`,
+      ':sk': 'image#',
+    },
+    Limit: limit,
+  }
+  if (startKey) {
+    query.ExclusiveStartKey = startKey
+  }
+  try {
+    console.log(`Querying DynamoDB with params: ${JSON.stringify(query)}`)
+    const data = await ddb.send(new QueryCommand(query))
+    console.log(`Query result: ${JSON.stringify(data)}`)
+    if (data.Items) {
+      const promises = data.Items.map(async (item) => {
+        const smallFileName = item.smallFileName
+        if (!smallFileName) {
+          console.error(`ERROR: No smallFileName found for item: ${JSON.stringify(item)}`)
+          return null
+        }
+        const command = new GetObjectCommand({
+          Bucket: Resource.Bucket.name,
+          Key: smallFileName,
+        })
+        const url = await getSignedUrl(bucket, command, { expiresIn: 3600 }) // 1 hour expiration
+        return {
+          date: item.date,
+          prompt: item.prompt,
+          ratio: item.ratio,
+          filename: item.sk.split('#')[1],
+          url,
+        }
+      })
+      const items = await Promise.all(promises)
+      console.log(`Items: ${JSON.stringify(items)}`)
+      return c.json({
+        items: items.filter((item) => item !== null),
+        next: data.LastEvaluatedKey ? JSON.stringify(data.LastEvaluatedKey) : null,
+      })
+    } else {
+      return c.json({
+        items: [],
+        next: null,
+      })
+    }
+  } catch (error: any) {
+    console.error(`ERROR: Can't query DynamoDB. Reason: ${error.message}`);
+    return c.text("Cannot query images", 500);
+  }
+})
+
+app.get('/image', async (c) => {
+  const userId = c.get('user_id')
+  if (!userId) {
+    return c.text('Unauthorized', 401)
+  }
+  const filename = c.req.query('filename')
+  if (!filename) {
+    return c.text('Missing required fields: filename', 400)
+  }
+  // Verify image belongs to user
+  const userIdFromFilename = filename.split('/')[1]
+  if (userId !== userIdFromFilename) {
+    return c.text('Unauthorized', 401)
+  }
+  const metadata = await ddb.send(new GetCommand({
+    TableName: Resource.Table.name,
+    Key: {
+      pk: `user#${userId}`,
+      sk: `image#${filename}`,
+    },
+  }))
+  if (!metadata.Item) {
+    return c.text('Image not found', 404)
+  }
+  const command = new GetObjectCommand({
+    Bucket: Resource.Bucket.name,
+    Key: filename,
+  })
+  const url = await getSignedUrl(bucket, command, { expiresIn: 3600 }) // 1 hour expiration
+  return c.json({
+    date: metadata.Item.date,
+    prompt: metadata.Item.prompt,
+    ratio: metadata.Item.ratio,
+    url,
+  })
+})
+
 
 export const handler = handle(app)

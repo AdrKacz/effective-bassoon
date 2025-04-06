@@ -22,7 +22,12 @@ export default $config({
     };
   },
   async run() {
-    const bucket = new sst.aws.Bucket("HonoBucket")
+    const bucket = new sst.aws.Bucket("Bucket")
+
+    const table = new sst.aws.Dynamo("Table", {
+      fields: { pk: "string", sk: "string" },
+      primaryIndex: { hashKey: "pk", rangeKey: "sk" },
+    })
 
     const auth = new sst.aws.Auth("Auth", {
       issuer: "auth/index.handler"
@@ -31,7 +36,7 @@ export default $config({
     const hono = new sst.aws.Function("Hono", {
       url: true,
       handler: "src/index.handler",
-      link: [bucket, auth],
+      link: [bucket, auth, table],
       permissions: [
         {
           actions: ["bedrock:InvokeModel"],
@@ -40,7 +45,7 @@ export default $config({
       ]
     })
 
-    const web = new sst.aws.StaticSite("HonoWeb", {
+    const web = new sst.aws.StaticSite("Web", {
       build: {
         command: "npm run web:build",
         output: "web/dist",

@@ -9,16 +9,20 @@ declare module "sst" {
       "type": "sst.aws.Auth"
       "url": string
     }
+    "Bucket": {
+      "name": string
+      "type": "sst.aws.Bucket"
+    }
     "Hono": {
       "name": string
       "type": "sst.aws.Function"
       "url": string
     }
-    "HonoBucket": {
+    "Table": {
       "name": string
-      "type": "sst.aws.Bucket"
+      "type": "sst.aws.Dynamo"
     }
-    "HonoWeb": {
+    "Web": {
       "type": "sst.aws.StaticSite"
       "url": string
     }
