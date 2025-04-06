@@ -1,2 +1,4 @@
-# effective-bassoon
-Let your dream come true
+```
+npm install
+npm run deploy
+```
