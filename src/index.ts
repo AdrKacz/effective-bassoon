@@ -1,9 +1,17 @@
 import { Hono } from 'hono'
 import { handle } from 'hono/aws-lambda'
+import { createClient } from "@openauthjs/openauth/client"
+import { bearerAuth } from 'hono/bearer-auth'
 import { Resource } from "sst"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3"
 import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime"
+import { subjects } from '../auth/subjects'
+
+const auth = createClient({
+  clientID: "hono",
+  issuer: Resource.Auth.url,
+})
 
 // Bedrock only supports Titan v2 in us-east-1 and us-west-2
 // https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html
@@ -15,9 +23,29 @@ const negativePrompt = "realistic face, visible eyes, fingers, photorealism, 3D,
 
 const bucket = new S3Client({ region: 'eu-west-3' })
 
-const app = new Hono()
+type Variables = {
+  user_id: string
+}
+
+const app = new Hono<{ Variables: Variables }>()
+
+app.use(
+  bearerAuth({
+    verifyToken: async (token, c) => {
+      console.log(`Verifying token: ${token}`)
+      const verified = await auth.verify(subjects, token)
+      if (verified.err) {
+        console.error("Cannot verify token", verified.err)
+        return false
+      }
+      c.set('user_id', verified.subject.properties.id)
+      return true
+    },
+  })
+)
 
 app.post('/image', async (c) => {
+  // const userId = c.get('user_id') // Already verified by bearerAuth
   const body = await c.req.json()
   if (!body || !body.prompt || !body.ratio) {
     return c.text('Missing required fields: prompt, ratio', 400)

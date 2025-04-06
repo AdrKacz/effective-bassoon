@@ -1,6 +1,7 @@
 const form = document.getElementById('generate-image');
 const submitButton = form.querySelector('input[type="submit"]');
 const imageElement = document.getElementById('generated-image');
+const ACCESS_TOKEN_KEY = 'access_token'
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -16,6 +17,7 @@ form.addEventListener('submit', async (event) => {
     const response = await fetch(import.meta.env.VITE_API_URL + 'image', {
       method: 'POST',
       headers: {
+        'Authorization': 'Bearer ' + localStorage.getItem(ACCESS_TOKEN_KEY),
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -23,7 +25,9 @@ form.addEventListener('submit', async (event) => {
         ratio: 'square',
       }),
     });
-
+    if (!response.ok) {
+        throw new Error(`Request failed with status: ${response.status}`)
+    }
     const imageUrl = await response.text();
     imageElement.src = imageUrl;
   } catch (error) {
