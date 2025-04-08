@@ -1,23 +1,18 @@
-const ACCESS_TOKEN_KEY = 'access_token'
+import { get } from "./auth";
+
 const template = document.getElementById('row-template');
 const container = template.parentElement;
 const loadMoreButton = document.getElementById('load-more')
 const rowSpinner = document.getElementById('row-spinner')
 
 async function images(next) {
-    const url = new URL(import.meta.env.VITE_API_URL + 'images')
+    const url = new URL(import.meta.env.VITE_API_URL + 'subscribed/images')
     url.searchParams.append('limit', 25)
     if (typeof next === "string") {
         url.searchParams.append('start', next)
     }
     try {
-        const response = await fetch(url.toString(), {
-            method: 'GET',
-            headers: {
-                'Authorization': 'Bearer ' + localStorage.getItem(ACCESS_TOKEN_KEY),
-                'Content-Type': 'application/json',
-            },
-        });
+        const response = await get(url.toString());
         if (!response.ok) {
             throw new Error(`Failed to fetch images: ${response.status}`);
         }
@@ -36,10 +31,8 @@ async function populate(next) {
     for (let i = 0; i < data.items.length; i += numberOfDivs) {
         const clone = template.cloneNode(true);
         const divs = clone.querySelectorAll('div.tile')
-        console.log("Divs length", divs.length)
         for (let j = 0; j < divs.length; j += 1) {
             const index = i + j;
-            console.log(i, j, i + j)
             if (index < data.items.length) {
                 const item = data.items[index]
                 divs[j].querySelector('img').src = item.url

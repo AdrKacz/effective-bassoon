@@ -1,8 +1,9 @@
+import { get, post } from "./auth";
+
 const form = document.getElementById('generate-image');
 const textarea = form.querySelector('textarea[name="prompt"]');
 const submitButton = form.querySelector('input[type="submit"]');
 const imageElement = document.getElementById('generated-image');
-const ACCESS_TOKEN_KEY = 'access_token'
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -13,17 +14,10 @@ form.addEventListener('submit', async (event) => {
   submitButton.classList.add('loading');
 
   try {
-    const response = await fetch(import.meta.env.VITE_API_URL + 'image', {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + localStorage.getItem(ACCESS_TOKEN_KEY),
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+    const response = await post(import.meta.env.VITE_API_URL + 'subscribed/image', {
         prompt: promptText,
         ratio: 'square',
-      }),
-    });
+    })
     if (!response.ok) {
         throw new Error(`Request failed with status: ${response.status}`)
     }
@@ -45,15 +39,9 @@ window.addEventListener("DOMContentLoaded", async () => {
   if (!filename) return;
 
   try {
-    const url = new URL("/image", import.meta.env.VITE_API_URL)
+    const url = new URL("/subscribed/image", import.meta.env.VITE_API_URL)
     url.searchParams.set("filename", filename)
-    const res = await fetch(url, {
-        method: 'GET',
-        headers: {
-            'Authorization': 'Bearer ' + localStorage.getItem(ACCESS_TOKEN_KEY),
-            'Content-Type': 'application/json',
-        },
-    })
+    const res = await get(url);
     if (!res.ok) throw new Error("Failed to fetch image");
 
     const data = await res.json();

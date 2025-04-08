@@ -15,10 +15,59 @@ const client = createClient({
 
 const loginButton = document.getElementById('login');
 const logoutButton = document.getElementById('logout');
+const overlayDiv = document.querySelector('.subscription-overlay');
 
 function clearTokens() {
   localStorage.removeItem(ACCESS_TOKEN_KEY)
   localStorage.removeItem(REFRESH_TOKEN_KEY)
+}
+
+export async function get(url) {
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            'Authorization': 'Bearer ' + localStorage.getItem(ACCESS_TOKEN_KEY),
+            'Content-Type': 'application/json',
+        },
+    });
+    return response;
+}
+
+export async function post(url, body) {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + localStorage.getItem(ACCESS_TOKEN_KEY),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+    return response;
+}
+
+async function authenticate() {
+    // Retrieve the user authenticated and update UI if needed
+    try {
+        const response = await get(import.meta.env.VITE_API_URL + 'user')
+        if (!response.ok) {
+            throw new Error(`Failed to fetch images: ${response.status}`);
+        }
+        const user = await response.json()
+        if (user['is_subscribed']) {
+            console.log('You are subscribed.')
+        } else {
+            console.log('You are not subscribed.')
+            if (overlayDiv) {
+                overlayDiv.classList.remove('d-none');
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching user:', error);
+        console.log('We assume you are not subscribed.');
+        if (overlayDiv) {
+            overlayDiv.classList.remove('d-none');
+        }
+    }
 }
 
 async function setup() {
@@ -28,10 +77,6 @@ async function setup() {
     const state = params.get('state')
     const challengeVerifier = localStorage.getItem(CHALLENGE_VERIFIER_KEY)
     const redirectUri = localStorage.getItem(REDIRECT_URI_KEY)
-    console.log("Code", code)
-    console.log("State", state)
-    console.log("Challenge verifier", challengeVerifier)
-    console.log("Redirect Uri", redirectUri)
     
     // Clean URL
     if (typeof code === "string" && typeof state === "string") {
@@ -53,7 +98,7 @@ async function setup() {
             localStorage.setItem(ACCESS_TOKEN_KEY, access)
             localStorage.setItem(REFRESH_TOKEN_KEY, refresh)
             loginButton.classList.add('d-none')
-            return
+            return authenticate()
         }
     }
     
@@ -75,10 +120,10 @@ async function setup() {
                     localStorage.setItem(ACCESS_TOKEN_KEY, access)
                     localStorage.setItem(REFRESH_TOKEN_KEY, refresh)
                 }
-                return
+                return authenticate()
             }
         } else {
-            return
+            return authenticate()
         }
     }
     if (!PUBLIC_PAGES.includes(window.location.pathname)) {
