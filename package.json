@@ -4,6 +4,7 @@
   "scripts": {
     "sso": "aws sso login --sso-session=Developer",
     "dev": "npx sst dev",
+    "secret": "npx sst secret set",
     "build": "esbuild --bundle --outfile=./dist/index.js --platform=node --target=node20 ./src/index.ts",
     "deploy": "run-s build zip update",
     "update": "aws lambda update-function-code --zip-file fileb://lambda.zip --function-name hello",

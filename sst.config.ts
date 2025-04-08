@@ -22,6 +22,9 @@ export default $config({
     };
   },
   async run() {
+    const googleClientID = new sst.Secret('GoogleClientID')
+    const googleClientSecret = new sst.Secret('GoogleClientSecret')
+
     const bucket = new sst.aws.Bucket("Bucket")
 
     const table = new sst.aws.Dynamo("Table", {
@@ -30,7 +33,10 @@ export default $config({
     })
 
     const auth = new sst.aws.Auth("Auth", {
-      issuer: "auth/index.handler"
+      issuer: {
+        handler: "auth/index.handler",
+        link: [googleClientID, googleClientSecret],
+      },
     })
 
     const hono = new sst.aws.Function("Hono", {

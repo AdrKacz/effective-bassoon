@@ -1,7 +1,7 @@
+import { Resource } from "sst";
 import { handle } from "hono/aws-lambda";
 import { issuer } from "@openauthjs/openauth";
-import { CodeUI } from "@openauthjs/openauth/ui/code";
-import { CodeProvider } from "@openauthjs/openauth/provider/code";
+import { GoogleProvider } from "@openauthjs/openauth/provider/google";
 import { subjects } from "./subjects";
 
 async function getUser(email: string) {
@@ -14,18 +14,18 @@ const app = issuer({
     // Remove after setting custom domain
     allow: async () => true,
     providers: {
-        code: CodeProvider(
-            CodeUI({
-                sendCode: async (email, code) => {
-                    console.log(email, code);
-                },
-            }),
-        ),
+        google: GoogleProvider({
+            clientID: Resource.GoogleClientID.value,
+            clientSecret: Resource.GoogleClientSecret.value,
+            pkce: true,
+            scopes: ["email"],
+        })
     },
     success: async (ctx, value) => {
-        if (value.provider === "code") {
+        if (value.provider === "google") {
+            console.log("Google user", value)
             return ctx.subject("user", {
-                id: await getUser(value.claims.email),
+                id: await getUser(value.clientID),
             });
         }
         throw new Error("Invalid provider");

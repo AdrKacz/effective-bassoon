@@ -13,6 +13,14 @@ declare module "sst" {
       "name": string
       "type": "sst.aws.Bucket"
     }
+    "GoogleClientID": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "GoogleClientSecret": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "Hono": {
       "name": string
       "type": "sst.aws.Function"
