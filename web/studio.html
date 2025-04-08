@@ -8,6 +8,7 @@
     <meta name="description" content="L'endroit où tes rêves prennent vie. Crée tes images instantanément.">
     <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800&amp;display=swap">
+    <link rel="stylesheet" href="/assets/css/styles.css">
 </head>
 
 <body>
@@ -35,6 +36,11 @@
                     <form class="d-flex d-xl-flex flex-column justify-content-xl-center align-items-xl-center gap-3" id="generate-image"><textarea class="form-control" name="prompt" placeholder="Imagine ..." autofocus="" spellcheck="true" wrap="soft" maxlength="512" required="" rows="5"></textarea><input class="btn btn-primary" type="submit" value="Générer" name="submit"></form>
                     <div class="d-flex flex-column gap-3 p-4"><button class="btn btn-outline-primary border-3" type="button">Générer une variation</button><button class="btn btn-primary" type="button">Partager</button></div>
                 </div>
+            </div>
+        </div>
+        <div class="d-none d-flex justify-content-center align-items-center subscription-overlay" id="subscription-overlay">
+            <div class="text-center mt-5">
+                <h1 class="text-white mb-4">Tu n'es pas d'abonnement actif.</h1><a class="btn btn-primary btn-lg" role="button" href="/pricing">Commencer mon essai gratuit</a>
             </div>
         </div>
     </section>

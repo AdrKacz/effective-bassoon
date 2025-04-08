@@ -1,0 +1,13 @@
+.subscription-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100dvw;
+  height: 100dvh;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background-color: rgba(0,0,0,0.5);
+  z-index: 10;
+  pointer-events: auto;
+}
+
