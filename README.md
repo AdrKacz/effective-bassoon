@@ -1,3 +1,13 @@
+## Create users manually
+For your use to be valid, you must have a row with:
+| Key | Value |
+| -- | -- |
+| `sk` | `user#{email}` |
+| `pk` | `metadata` |
+| `remaining_credits` | `{number}` |
+| `subscription_end_date` | `{ISO date}` |
+| `stripe_subscription` | `{string}` |
+
 ## How to host localy from your domain
 Google authentication and other providers don't always serve credentials and claims to `localhost`.
 
