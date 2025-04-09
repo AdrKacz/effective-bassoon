@@ -4,6 +4,9 @@ const form = document.getElementById('generate-image');
 const textarea = form.querySelector('textarea[name="prompt"]');
 const submitButton = form.querySelector('input[type="submit"]');
 const imageElement = document.getElementById('generated-image');
+const pRemainingCredits = document.getElementById('remaining-credits');
+const pRemainingCreditsSpan = pRemainingCredits.querySelector('span');
+const pNoMoreCredits = document.getElementById('no-more-credits');
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -21,8 +24,16 @@ form.addEventListener('submit', async (event) => {
     if (!response.ok) {
         throw new Error(`Request failed with status: ${response.status}`)
     }
-    const imageUrl = await response.text();
-    imageElement.src = imageUrl;
+    const data = await response.json();
+    imageElement.src = data.url;
+    const remainingCredits = data['remaining_credits'];
+    if (remainingCredits === 0) {
+        pRemainingCredits.classList.add('d-none');
+        pNoMoreCredits.classList.remove('d-none');
+    } else {
+        pRemainingCreditsSpan.textContent = remainingCredits;
+        pRemainingCredits.classList.remove('d-none');
+    }
   } catch (error) {
     console.error('Error:', error);
   } finally {

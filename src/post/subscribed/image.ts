@@ -2,7 +2,7 @@ import { Resource } from "sst"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3"
 import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime"
-import { PutCommand } from "@aws-sdk/lib-dynamodb";
+import { PutCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import sharp from 'sharp'
 import { ddb, bucket } from "../../../clients";
 import { Context } from "hono";
@@ -21,6 +21,11 @@ export async function postImage(c: Context<{ Variables: User }>) {
     if (!userId) {
         return c.text('Unauthorized', 401)
     }
+    const remainingCredits = c.get('remaining_credits')
+    if (typeof remainingCredits !== 'number' || remainingCredits <= 0) {
+        return c.text('Not enough credits', 402)
+    }
+
     const body = await c.req.json()
     if (!body || !body.prompt || !body.ratio) {
         return c.text('Missing required fields: prompt, ratio', 400)
@@ -129,7 +134,28 @@ export async function postImage(c: Context<{ Variables: User }>) {
         });
         const url = await getSignedUrl(bucket, command, { expiresIn: 3600 }); // 1 hour expiration
 
-        return c.text(url, 200);
+        // Remove 1 to remaining credits
+        const user = await ddb.send(new UpdateCommand({
+            TableName: Resource.Table.name,
+            Key: {
+                pk: `user#${userId}`,
+                sk: 'metadata',
+            },
+            UpdateExpression: 'ADD #remaining_credits :credits',
+            ExpressionAttributeNames: {
+                '#remaining_credits': 'remaining_credits',
+            },
+            ExpressionAttributeValues: {
+                ':credits': -1,
+            },
+            ReturnValues: 'ALL_NEW',
+        }))
+        console.log(`Remaining credits for user ${userId}: ${user.Attributes?.remaining_credits?.value}`);
+
+        return c.json({
+            remaining_credits: user.Attributes?.remaining_credits?.value,
+            url,
+        });
     } catch (error: any) {
         console.error(`ERROR: Can't invoke '${modelId}'. Reason: ${error.message}`);
         return c.text("Cannot generate image", 500);

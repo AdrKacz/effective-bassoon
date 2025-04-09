@@ -43,11 +43,14 @@ app.use(
         customLogger(`ERROR: User not found: ${verified.subject.properties.id}`)
         return false
       }
+
+      console.log("User: ", user.Item)
       if (typeof user.Item['subscription_end_date'] === 'string') {
         c.set('subscription_end_date', user.Item['subscription_end_date'])
       }
-      if (typeof user.Item['remaining_credits'] === 'number') {
-        c.set('remaining_credits', user.Item['remaining_credits'])
+
+      if (typeof user.Item['remaining_credits']?.value === 'number') {
+        c.set('remaining_credits', user.Item['remaining_credits'].value)
       }
 
       const email = user.Item['google_email'] // add other providers here
