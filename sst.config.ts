@@ -37,7 +37,7 @@ export default $config({
     const auth = new sst.aws.Auth("Auth", {
       issuer: {
         handler: "auth/index.handler",
-        link: [googleClientID, googleClientSecret],
+        link: [table, googleClientID, googleClientSecret],
       },
       domain: $app.stage === "production" ? `auth.${domain}` : undefined,
     })
@@ -45,7 +45,7 @@ export default $config({
     const hono = new sst.aws.Function("Hono", {
       url: true,
       handler: "src/index.handler",
-      link: [bucket, auth, table],
+      link: [bucket, table, auth],
       permissions: [
         {
           actions: ["bedrock:InvokeModel"],

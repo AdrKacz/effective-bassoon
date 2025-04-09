@@ -3,16 +3,33 @@ import { handle } from "hono/aws-lambda";
 import { issuer } from "@openauthjs/openauth";
 import { GoogleProvider } from "@openauthjs/openauth/provider/google";
 import { subjects } from "./subjects";
+import { PutCommand } from "@aws-sdk/lib-dynamodb";
+import { ddb } from "./clients";
 
-async function getUser(email: string) {
-    // Get user from database and return user ID
-    return "123";
+async function getUser(clientID: string, args: any = {}) {
+    // Send put request to database, only put if user does not exist
+    try {
+        await ddb.send(new PutCommand({
+            TableName: Resource.Table.name,
+            Item: {
+                pk: `user#${clientID}`,
+                sk: 'metadata',
+                ...args,
+            },
+            ConditionExpression: 'attribute_not_exists(pk) AND attribute_not_exists(sk)',
+        }));
+    } catch (err: any) {
+        if (err.name === 'ConditionalCheckFailedException') {
+            console.log(`User already exists: ${clientID}`);
+        } else {
+            throw err;
+        }
+    }
+    return clientID;
 }
 
 const app = issuer({
     subjects,
-    // Remove after setting custom domain
-    allow: async () => true,
     providers: {
         google: GoogleProvider({
             clientID: Resource.GoogleClientID.value,
@@ -25,7 +42,9 @@ const app = issuer({
         if (value.provider === "google") {
             console.log("Google user", value)
             return ctx.subject("user", {
-                id: await getUser(value.clientID),
+                id: await getUser(value.clientID, {
+                    google_client_id: value.clientID
+                }),
             });
         }
         throw new Error("Invalid provider");

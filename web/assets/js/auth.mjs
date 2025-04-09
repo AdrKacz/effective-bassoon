@@ -50,7 +50,7 @@ async function authenticate() {
     try {
         const response = await get(import.meta.env.VITE_API_URL + 'user')
         if (!response.ok) {
-            throw new Error(`Failed to fetch images: ${response.status}`);
+            throw new Error(`Failed to fetch user: ${response.status}`);
         }
         const user = await response.json()
         if (user['is_subscribed']) {
