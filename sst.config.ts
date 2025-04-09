@@ -9,7 +9,7 @@ export default $config({
       home: "aws",
       providers: {
         aws: {
-          profile: input?.stage === "production" ? undefined : "EffectiveBassoonDeveloper",
+          profile: input?.stage === "production" ? "EffectiveBassoonDeveloper" : "EffectiveBassoonDeveloper",
           region: 'eu-west-3',
           defaultTags: {
             tags: {
@@ -22,6 +22,8 @@ export default $config({
     };
   },
   async run() {
+    const domain = "le-studio-k.fr"
+    const hostedZone = new sst.Secret('HostedZone')
     const googleClientID = new sst.Secret('GoogleClientID')
     const googleClientSecret = new sst.Secret('GoogleClientSecret')
 
@@ -37,6 +39,7 @@ export default $config({
         handler: "auth/index.handler",
         link: [googleClientID, googleClientSecret],
       },
+      domain: $app.stage === "production" ? `auth.${domain}` : undefined,
     })
 
     const hono = new sst.aws.Function("Hono", {
@@ -64,7 +67,12 @@ export default $config({
       environment: {
         VITE_API_URL: hono.url,
         VITE_AUTH_URL: auth.url,
-      }
+      },
+      domain: $app.stage === "production" ? {
+        name: domain,
+        redirects: [`www.${domain}`],
+        dns: sst.aws.dns({ zone: hostedZone.value }),
+      } : undefined,
     });
 
     return {

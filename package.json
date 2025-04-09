@@ -4,6 +4,7 @@
   "scripts": {
     "sso": "aws sso login --sso-session=Developer",
     "dev": "npx sst dev",
+    "sst:deploy": "npx sst deploy",
     "secret": "npx sst secret set",
     "build": "esbuild --bundle --outfile=./dist/index.js --platform=node --target=node20 ./src/index.ts",
     "deploy": "run-s build zip update",

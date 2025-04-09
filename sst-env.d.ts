@@ -26,6 +26,10 @@ declare module "sst" {
       "type": "sst.aws.Function"
       "url": string
     }
+    "HostedZone": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "Table": {
       "name": string
       "type": "sst.aws.Dynamo"
