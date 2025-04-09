@@ -6,7 +6,7 @@ const REFRESH_TOKEN_KEY = 'refresh_token'
 const CHALLENGE_VERIFIER_KEY = 'challenge_verifier'
 const REDIRECT_URI_KEY = "redirect_uri"
 const LAST_VERIFIED_KEY = "last_verified"
-const PUBLIC_PAGES = ['/', '/contacts', '/pricing']
+const PUBLIC_PAGES = ['/', '/contacts', '/pricing', '/terms', '/policy']
 
 const client = createClient({
   clientID: "le-studio",
@@ -16,6 +16,9 @@ const client = createClient({
 const loginButton = document.getElementById('login');
 const logoutButton = document.getElementById('logout');
 const overlayDiv = document.querySelector('.subscription-overlay');
+const paymentButtons = document.querySelectorAll('a.payment-button');
+const pPaymentConnectionDetails = document.querySelectorAll('p.payment-connection-details');
+
 
 function clearTokens() {
   localStorage.removeItem(ACCESS_TOKEN_KEY)
@@ -53,6 +56,17 @@ async function authenticate() {
             throw new Error(`Failed to fetch user: ${response.status}`);
         }
         const user = await response.json()
+        if (typeof user['user_id'] === 'string') {
+            for (const b of paymentButtons) {
+                const url = new URL(b.href);
+                // TODO: Send User Email to prefill
+                b.href = url.toString();
+                b.classList.remove('disabled');
+            }
+            for (const p of pPaymentConnectionDetails) {
+                p.classList.add('d-none');
+            }
+        }
         if (user['is_subscribed']) {
             console.log('You are subscribed.')
         } else {
@@ -66,6 +80,9 @@ async function authenticate() {
         console.log('We assume you are not subscribed.');
         if (overlayDiv) {
             overlayDiv.classList.remove('d-none');
+        }
+        for (const p of pPaymentConnectionDetails) {
+            p.classList.add('d-none');
         }
     }
 }

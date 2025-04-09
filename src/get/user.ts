@@ -13,6 +13,7 @@ export async function getUser(c: Context<{ Variables: User }>) {
     }
 
     return c.json({
+        user_id: userId,
         remaining_credits: c.get('remaining_credits') ?? 0,
         is_subscribed: isSubscribed,
     })
