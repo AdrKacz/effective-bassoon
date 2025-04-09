@@ -7,7 +7,7 @@ import { Context } from "hono";
 import { User } from '../../types'
 
 export async function getImage(c: Context<{ Variables: User }>) {
-    const userId = c.get('user_id')
+    const userId = c.get('id')
     if (!userId) {
         return c.text('Unauthorized', 401)
     }

@@ -17,7 +17,7 @@ const modelId = 'amazon.titan-image-generator-v2:0'
 const negativePrompt = "realistic face, visible eyes, fingers, photorealism, 3D, fine details, intricate textures, complex clothing, detailed skin, facial expressions, realistic anatomy, soft lighting, shadows, reflections, cluttered background, ornate elements, blur, noise, overexposure, transparent parts, pores, wrinkles, makeup, soft gradients"
 
 export async function postImage(c: Context<{ Variables: User }>) {
-    const userId = c.get('user_id')
+    const userId = c.get('id')
     if (!userId) {
         return c.text('Unauthorized', 401)
     }

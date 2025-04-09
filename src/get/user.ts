@@ -2,7 +2,7 @@ import { Context } from "hono";
 import { User } from '../types'
 
 export async function getUser(c: Context<{ Variables: User }>) {
-    const userId = c.get('user_id')
+    const userId = c.get('id')
     if (!userId) {
         return c.text('Unauthorized', 401)
     }
@@ -13,7 +13,7 @@ export async function getUser(c: Context<{ Variables: User }>) {
     }
 
     return c.json({
-        user_id: userId,
+        email: c.get('email'),
         remaining_credits: c.get('remaining_credits') ?? 0,
         is_subscribed: isSubscribed,
     })

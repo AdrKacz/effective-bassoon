@@ -5,14 +5,15 @@ import { GoogleProvider } from "@openauthjs/openauth/provider/google";
 import { subjects } from "./subjects";
 import { PutCommand } from "@aws-sdk/lib-dynamodb";
 import { ddb } from "./clients";
+import jwt from "jsonwebtoken";
 
-async function getUser(clientID: string, args: any = {}) {
+async function getUser(id: string, args: any = {}) {
     // Send put request to database, only put if user does not exist
     try {
         await ddb.send(new PutCommand({
             TableName: Resource.Table.name,
             Item: {
-                pk: `user#${clientID}`,
+                pk: `user#${id}`,
                 sk: 'metadata',
                 ...args,
             },
@@ -20,12 +21,12 @@ async function getUser(clientID: string, args: any = {}) {
         }));
     } catch (err: any) {
         if (err.name === 'ConditionalCheckFailedException') {
-            console.log(`User already exists: ${clientID}`);
+            console.log(`User already exists: ${id}`);
         } else {
             throw err;
         }
     }
-    return clientID;
+    return id;
 }
 
 const app = issuer({
@@ -38,12 +39,26 @@ const app = issuer({
             scopes: ["email"],
         })
     },
+    allow: async ({ redirectURI }) => {
+        // Domain must end with le-studio-k.fr
+        const domain = redirectURI.split("/")[2];
+        if (domain.endsWith("le-studio-k.fr")) {
+            return true;
+        }
+        return false;
+    },
+    // This function is called when the user is authenticated
     success: async (ctx, value) => {
         if (value.provider === "google") {
-            console.log("Google user", value)
+            const decoded = jwt.decode(value.tokenset.raw.id_token) as any;
+            if (!decoded) {
+                throw new Error("Invalid ID token");
+            }
+            const email = decoded.email;
             return ctx.subject("user", {
-                id: await getUser(value.clientID, {
-                    google_client_id: value.clientID
+                id: await getUser(email, {
+                    google_email: email,
+                    google_client_id: value.clientID,
                 }),
             });
         }

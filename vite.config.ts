@@ -1,6 +1,6 @@
 import { resolve } from 'path'
 import { globSync } from 'glob'
-import { empty } from 'valibot'
+import mkcert from 'vite-plugin-mkcert'
 
 const files = globSync(
     ['web/**/*.html', 'web/**/*.css', 'web/**/*.mjs'],
@@ -22,4 +22,6 @@ export default {
         outDir: 'dist',
         rollupOptions: { input: files }
     },
-}
+    server: { host: true, port: 443 },
+    plugins: [mkcert({ hosts: ['local.le-studio-k.fr'] })],
+} 

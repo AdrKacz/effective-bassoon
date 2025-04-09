@@ -56,10 +56,10 @@ async function authenticate() {
             throw new Error(`Failed to fetch user: ${response.status}`);
         }
         const user = await response.json()
-        if (typeof user['user_id'] === 'string') {
+        if (typeof user['email'] === 'string') {
             for (const b of paymentButtons) {
                 const url = new URL(b.href);
-                // TODO: Send User Email to prefill
+                url.searchParams.append("prefilled_email", user['email']);
                 b.href = url.toString();
                 b.classList.remove('disabled');
             }

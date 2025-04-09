@@ -29,7 +29,7 @@ app.use(
         customLogger("Cannot verify token", JSON.stringify(verified.err))
         return false
       }
-      c.set('user_id', verified.subject.properties.id)
+      c.set('id', verified.subject.properties.id)
 
       const user = await ddb.send(new GetCommand({
         TableName: Resource.Table.name,
@@ -49,6 +49,11 @@ app.use(
       if (typeof user.Item['remaining_credits'] === 'number') {
         c.set('remaining_credits', user.Item['remaining_credits'])
       }
+
+      const email = user.Item['google_email'] // add other providers here
+      if (typeof email === 'string') {
+        c.set('email', email)
+      }
       return true
     },
   })
@@ -60,7 +65,7 @@ app.use(
     const subscriptionEndDate = new Date(c.get('subscription_end_date'))
     const now = new Date()
     if (subscriptionEndDate < now) {
-      customLogger(`ERROR: User subscription has expired: ${c.get('user_id')}`)
+      customLogger(`ERROR: User subscription has expired: ${c.get('id')}`)
       return c.text('Unauthorized', 401)
     }
     return next()
