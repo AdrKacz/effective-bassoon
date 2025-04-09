@@ -4,7 +4,7 @@ import { handle } from 'hono/aws-lambda'
 import { bearerAuth } from 'hono/bearer-auth'
 import { GetCommand } from "@aws-sdk/lib-dynamodb";
 import { subjects } from '../auth/subjects'
-import { auth, ddb } from './clients'
+import { auth, ddb } from '../clients'
 import { postImage } from './post/subscribed/image'
 import { getImages } from './get/subscribed/images'
 import { getImage } from './get/subscribed/image'

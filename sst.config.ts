@@ -26,6 +26,8 @@ export default $config({
     const hostedZone = new sst.Secret('HostedZone')
     const googleClientID = new sst.Secret('GoogleClientID')
     const googleClientSecret = new sst.Secret('GoogleClientSecret')
+    const stripeAPIKey = new sst.Secret('StripeAPIKey')
+    const stripeEndpointSecret = new sst.Secret('StripeEndpointSecret')
 
     const bucket = new sst.aws.Bucket("Bucket")
 
@@ -54,6 +56,12 @@ export default $config({
       ]
     })
 
+    const stripe = new sst.aws.Function("Stripe", {
+      url: true,
+      handler: "stripe/index.handler",
+      link: [table, stripeAPIKey, stripeEndpointSecret],
+    })
+
     const web = new sst.aws.StaticSite("Web", {
       build: {
         command: "npm run web:build",
@@ -80,6 +88,7 @@ export default $config({
       hono: hono.url,
       web: web.url,
       auth: auth.url,
+      stripe: stripe.url,
     }
   }
 });

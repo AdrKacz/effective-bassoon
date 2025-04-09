@@ -30,6 +30,19 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "Stripe": {
+      "name": string
+      "type": "sst.aws.Function"
+      "url": string
+    }
+    "StripeAPIKey": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "StripeEndpointSecret": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "Table": {
       "name": string
       "type": "sst.aws.Dynamo"

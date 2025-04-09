@@ -4,7 +4,7 @@ import { issuer } from "@openauthjs/openauth";
 import { GoogleProvider } from "@openauthjs/openauth/provider/google";
 import { subjects } from "./subjects";
 import { PutCommand } from "@aws-sdk/lib-dynamodb";
-import { ddb } from "./clients";
+import { ddb } from "../clients/ddb";
 import jwt from "jsonwebtoken";
 
 async function getUser(id: string, args: any = {}) {

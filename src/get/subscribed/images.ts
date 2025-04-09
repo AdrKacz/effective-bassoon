@@ -2,7 +2,7 @@ import { Resource } from "sst"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { GetObjectCommand } from "@aws-sdk/client-s3"
 import { QueryCommand, QueryCommandInput } from "@aws-sdk/lib-dynamodb";
-import { ddb, bucket } from '../../clients'
+import { ddb, bucket } from "../../../clients";
 import { Context } from "hono";
 import { User } from '../../types'
 

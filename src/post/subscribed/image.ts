@@ -4,7 +4,7 @@ import { PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3"
 import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime"
 import { PutCommand } from "@aws-sdk/lib-dynamodb";
 import sharp from 'sharp'
-import { ddb, bucket } from '../../clients'
+import { ddb, bucket } from "../../../clients";
 import { Context } from "hono";
 import { User } from '../../types'
 
