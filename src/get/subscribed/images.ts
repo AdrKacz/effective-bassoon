@@ -62,7 +62,6 @@ export async function getImages(c: Context<{ Variables: User }>) {
                 }
             })
             const items = await Promise.all(promises)
-            console.log(`Items: ${JSON.stringify(items)}`)
             return c.json({
                 items: items.filter((item) => item !== null),
                 next: data.LastEvaluatedKey ? JSON.stringify(data.LastEvaluatedKey) : null,

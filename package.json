@@ -2,10 +2,13 @@
   "name": "effective-bassoon",
   "type": "module",
   "scripts": {
+    "state:dev": "npx sst state export | jq '.latest.resources[0].outputs'",
+    "state:production": "npx sst state export --stage production | jq '.latest.resources[0].outputs'",
     "sso": "aws sso login --sso-session=Developer",
     "dev": "npx sst dev",
     "sst:deploy": "npx sst deploy",
     "secret": "npx sst secret set",
+    "secret:list": "npx sst secret list",
     "build": "esbuild --bundle --outfile=./dist/index.js --platform=node --target=node20 ./src/index.ts",
     "deploy": "run-s build zip update",
     "update": "aws lambda update-function-code --zip-file fileb://lambda.zip --function-name hello",
@@ -32,8 +35,8 @@
     "@aws-sdk/s3-request-presigner": "^3.782.0",
     "@openauthjs/openauth": "^0.4.3",
     "hono": "^4.7.5",
+    "jimp": "^1.6.0",
     "jsonwebtoken": "^9.0.2",
-    "sharp": "^0.34.0",
     "sst": "3.12.3",
     "stripe": "^18.0.0",
     "vite-plugin-mkcert": "^1.17.8"

@@ -3,7 +3,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3"
 import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime"
 import { PutCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
-import sharp from 'sharp'
+import { Jimp } from 'jimp'
 import { ddb, bucket } from "../../../clients";
 import { Context } from "hono";
 import { User } from '../../types'
@@ -94,10 +94,9 @@ export async function postImage(c: Context<{ Variables: User }>) {
         }
         const image = responseBody.images[0];
         const imageBuffer = Buffer.from(image, 'base64');
-        const smallImageBuffer = await sharp(imageBuffer)
-            .resize({ height: 300, fit: 'cover' })
-            .toFormat('png')
-            .toBuffer();
+        const smallImage = await Jimp.fromBuffer(imageBuffer)
+        smallImage.cover({ h: 300, w: 300 })
+        const smallImageBuffer = await smallImage.getBuffer("image/png")
         const now = (new Date()).toISOString()
         const fileName = `users/${userId}/images/${now}.png`;
         const smallFileName = `users/${userId}/images/${now}-small.png`;

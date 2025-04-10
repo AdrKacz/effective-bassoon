@@ -49,8 +49,10 @@ app.use(
         c.set('subscription_end_date', user.Item['subscription_end_date'])
       }
 
-      if (typeof user.Item['remaining_credits']?.value === 'number') {
-        c.set('remaining_credits', user.Item['remaining_credits'].value)
+      try {
+        c.set('remaining_credits', parseInt(user.Item['remaining_credits']?.value))
+      } catch (error: any) {
+        console.log(`ERROR: Cannot parse remaining_credits: ${error.message}`)
       }
 
       const email = user.Item['google_email'] // add other providers here
