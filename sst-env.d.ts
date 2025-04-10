@@ -39,7 +39,15 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "StripeBasicPaymentLink": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "StripeEndpointSecret": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "StripeProPaymentLink": {
       "type": "sst.sst.Secret"
       "value": string
     }

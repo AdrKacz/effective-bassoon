@@ -29,6 +29,9 @@ export default $config({
     const stripeAPIKey = new sst.Secret('StripeAPIKey')
     const stripeEndpointSecret = new sst.Secret('StripeEndpointSecret')
 
+    const stripeBasicPaymentLink = new sst.Secret("StripeBasicPaymentLink")
+    const stripeProPaymentLink = new sst.Secret("StripeProPaymentLink")
+
     const bucket = new sst.aws.Bucket("Bucket")
 
     const table = new sst.aws.Dynamo("Table", {
@@ -75,6 +78,8 @@ export default $config({
       environment: {
         VITE_API_URL: hono.url,
         VITE_AUTH_URL: auth.url,
+        VITE_STRIPE_BASIC_PAYMENT_LINK: stripeBasicPaymentLink.value,
+        VITE_STRIPE_PRO_PAYMENT_LINK: stripeProPaymentLink.value,
       },
       domain: $app.stage === "production" ? {
         name: domain,
