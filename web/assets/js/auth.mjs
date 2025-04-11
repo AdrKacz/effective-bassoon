@@ -19,12 +19,6 @@ const overlayDiv = document.querySelector('.subscription-overlay');
 const paymentButtons = document.querySelectorAll('a.payment-button');
 const pPaymentConnectionDetails = document.querySelectorAll('p.payment-connection-details');
 
-
-function clearTokens() {
-  localStorage.removeItem(ACCESS_TOKEN_KEY)
-  localStorage.removeItem(REFRESH_TOKEN_KEY)
-}
-
 export async function get(url) {
     const response = await fetch(url, {
         method: 'GET',
@@ -158,6 +152,6 @@ setup()
 
 
 logoutButton.addEventListener('click', () => {
-    localStorage.clear()
-    location.reload()
+    localStorage.clear();
+    window.location.reload();
 })

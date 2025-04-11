@@ -18,7 +18,8 @@ def move_file(old_file_path, new_file_path):
     except FileNotFoundError:
         print(f"File not found: {old_file_path}")
     
-special_scripts = ["smart-forms", "bs-init", "bold-and-dark"]
+special_scripts = ["bs-init", "bold-and-dark"]
+move_file(os.path.join(folder_path, "assets/js/smart-forms.min.js"), os.path.join(folder_path, "assets/js/smart-forms.mjs"))
 for script in special_scripts:
     move_file(os.path.join(folder_path, "assets/js/" + script + ".js"), os.path.join(folder_path, "assets/js/" + script + ".mjs"))
 move_file(os.path.join(folder_path, "sitemap.xml"), os.path.join(folder_path, "public/sitemap.xml"))
@@ -54,6 +55,9 @@ def replace(file, pattern, replacement):
 
 # Replace script tag in HTML files
 for html_file in html_files:
+    replace(html_file,
+            r'<script\s+src="(.*)?smart-forms\.min\.js">',
+            r'<script src="\1smart-forms.mjs" type="module">')
     for script in special_scripts:
         replace(html_file,
                 r'<script\s+src="(.*)?' + script + r'\.js">',
