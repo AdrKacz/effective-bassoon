@@ -33,6 +33,7 @@ export async function getImages(c: Context<{ Variables: User }>) {
             ':sk': 'image#',
         },
         Limit: limit,
+        ScanIndexForward: false,
     }
     if (startKey) {
         query.ExclusiveStartKey = startKey

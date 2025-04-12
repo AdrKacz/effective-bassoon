@@ -7,7 +7,7 @@ const rowSpinner = document.getElementById('row-spinner')
 
 async function images(next) {
     const url = new URL(import.meta.env.VITE_API_URL + 'subscribed/images')
-    url.searchParams.append('limit', 25)
+    url.searchParams.append('limit', 9)
     if (typeof next === "string") {
         url.searchParams.append('start', next)
     }

@@ -7,6 +7,11 @@ const imageElement = document.getElementById('generated-image');
 const pRemainingCredits = document.getElementById('remaining-credits');
 const pRemainingCreditsSpan = pRemainingCredits.querySelector('span');
 const pNoMoreCredits = document.getElementById('no-more-credits');
+const pError = document.getElementById('generation-error')
+if (pError) {
+    pError.dataset['originaltext'] = pError.textContent;
+}
+
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -15,6 +20,8 @@ form.addEventListener('submit', async (event) => {
   // Disable button and add loading class
   submitButton.disabled = true;
   submitButton.classList.add('loading');
+  pError.textContent = pError.dataset['originaltext'];
+  pError.classList.add('d-none');
 
   try {
     const response = await post(import.meta.env.VITE_API_URL + 'subscribed/image', {
@@ -22,7 +29,7 @@ form.addEventListener('submit', async (event) => {
         ratio: 'square',
     })
     if (!response.ok) {
-        throw new Error(`Request failed with status: ${response.status}`)
+        throw new Error(`${response.status}: ${await response.text()}`)
     }
     const data = await response.json();
     imageElement.src = data.url;
@@ -35,7 +42,11 @@ form.addEventListener('submit', async (event) => {
         pRemainingCredits.classList.remove('d-none');
     }
   } catch (error) {
-    console.error('Error:', error);
+    console.error(error);
+    if (error.message.includes('This prompt violates our terms of service.')) {
+        pError.textContent = "Ta requête ne respecte pas nos conditions d’utilisation."
+    }
+    pError.classList.remove('d-none');
   } finally {
     // Re-enable button and remove loading class
     submitButton.disabled = false;

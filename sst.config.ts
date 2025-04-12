@@ -54,7 +54,13 @@ export default $config({
       permissions: [
         {
           actions: ["bedrock:InvokeModel"],
-          resources: ["arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-image-generator-v2:0"],
+          resources: [
+            "arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-image-generator-v2:0",
+            "arn:aws:bedrock:us-east-1::foundation-model/meta.llama3-3-70b-instruct-v1:0",
+            "arn:aws:bedrock:us-east-2::foundation-model/meta.llama3-3-70b-instruct-v1:0",
+            "arn:aws:bedrock:us-west-2::foundation-model/meta.llama3-3-70b-instruct-v1:0",
+            "arn:aws:bedrock:us-east-1:211125769209:inference-profile/us.meta.llama3-3-70b-instruct-v1:0"
+          ],
         },
       ]
     })

@@ -7,14 +7,62 @@ import { Jimp } from 'jimp'
 import { ddb, bucket } from "../../../clients";
 import { Context } from "hono";
 import { User } from '../../types'
+import { native } from "bun:sqlite";
 
 // Bedrock only supports Titan v2 in us-east-1 and us-west-2
 // https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html
 const bedrock = new BedrockRuntimeClient({ region: 'us-east-1' });
 const modelId = 'amazon.titan-image-generator-v2:0'
+const llamaModelId = 'us.meta.llama3-3-70b-instruct-v1:0'
 
 // Negative prompt to avoid complex images that the model can't handle
-const negativePrompt = "realistic face, visible eyes, fingers, photorealism, 3D, fine details, intricate textures, complex clothing, detailed skin, facial expressions, realistic anatomy, soft lighting, shadows, reflections, cluttered background, ornate elements, blur, noise, overexposure, transparent parts, pores, wrinkles, makeup, soft gradients"
+// const negativePrompt = "realistic face, visible eyes, fingers, photorealism, 3D, fine details, intricate textures, complex clothing, detailed skin, facial expressions, realistic anatomy, soft lighting, shadows, reflections, cluttered background, ornate elements, blur, noise, overexposure, transparent parts, pores, wrinkles, makeup, soft gradients"
+
+const llamaPromptTemplate = `<|begin_of_text|><|start_header_id|>user<|end_header_id|>
+You will be given a prompt, you will perform the following tasks and return the enhanced prompt only:
+{tasks}
+Input: {prompt}
+<|eot_id|>
+<|start_header_id|>assistant<|end_header_id|>
+Output:
+`
+
+async function enhancePrompt(prompt: string) {
+
+    const tasks = ["Translate the prompt to English if it is not in English."]
+    if (prompt.length > 512) {
+        tasks.push("Shorten the prompt to 512 characters or less. Keep as much information as possible.")
+    }
+    tasks.push("Enhance the prompt using best practices for image generation.")
+
+    let tasksString = ""
+    for (let i = 0; i < tasks.length; i++) {
+        tasksString += `${i + 1}. ${tasks[i]}`
+        if (i < tasks.length - 1) {
+            tasksString += "\n"
+        }
+    }
+
+    // https://docs.aws.amazon.com/bedrock/latest/userguide/bedrock-runtime_example_bedrock-runtime_InvokeModel_MetaLlama3_section.html
+    const request = {
+        prompt: llamaPromptTemplate.replace("{tasks}", tasksString).replace("{prompt}", prompt),
+        // Optional inference parameters:
+        max_gen_len: 512,
+        temperature: 0.5,
+        top_p: 0.9,
+    };
+
+    const response = await bedrock.send(new InvokeModelCommand({
+        modelId: llamaModelId,
+        body: JSON.stringify(request),
+        contentType: 'application/json',
+    }));
+
+    const nativeResponse = JSON.parse(new TextDecoder().decode(response.body));
+
+    const responseText = nativeResponse.generation;
+    return responseText
+}
 
 export async function postImage(c: Context<{ Variables: User }>) {
     const userId = c.get('id')
@@ -34,7 +82,10 @@ export async function postImage(c: Context<{ Variables: User }>) {
     if (typeof prompt !== 'string') {
         return c.text('Prompt must be a string', 400)
     }
-    if (prompt.length > 512) {
+
+    const enhancedPrompt = await enhancePrompt(prompt)
+    console.log(`Enhanced prompt: ${enhancedPrompt}`)
+    if (enhancedPrompt.length > 512) {
         return c.text('Prompt is too long', 400)
     }
     const ratio = body.ratio // square, landscape, portrait
@@ -67,8 +118,8 @@ export async function postImage(c: Context<{ Variables: User }>) {
     const payload = {
         taskType: "TEXT_IMAGE",
         textToImageParams: {
-            text: prompt,
-            negativeText: negativePrompt,
+            text: enhancedPrompt,
+            // negativeText: negativePrompt,
         },
         imageGenerationConfig: {
             seed,
@@ -157,6 +208,9 @@ export async function postImage(c: Context<{ Variables: User }>) {
         });
     } catch (error: any) {
         console.error(`ERROR: Can't invoke '${modelId}'. Reason: ${error.message}`);
+        if (error.message.includes('AUP or AWS Responsible AI Policy')) {
+            return c.text("This prompt violates our terms of service.", 400);
+        }
         return c.text("Cannot generate image", 500);
     }
 }
