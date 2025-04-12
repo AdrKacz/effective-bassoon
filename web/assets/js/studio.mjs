@@ -19,19 +19,13 @@ form.addEventListener('submit', async (event) => {
 
   // Disable button and add loading class
   submitButton.disabled = true;
+  textarea.disabled = true;
   submitButton.classList.add('loading');
   pError.textContent = pError.dataset['originaltext'];
   pError.classList.add('d-none');
 
   try {
-    const response = await post(import.meta.env.VITE_API_URL + 'subscribed/image', {
-        prompt: promptText,
-        ratio: 'square',
-    })
-    if (!response.ok) {
-        throw new Error(`${response.status}: ${await response.text()}`)
-    }
-    const data = await response.json();
+    const data = await startProgressBarWithImageGeneration(promptText);
     imageElement.src = data.url;
     const remainingCredits = data['remaining_credits'];
     if (remainingCredits === 0) {
@@ -45,11 +39,14 @@ form.addEventListener('submit', async (event) => {
     console.error(error);
     if (error.message.includes('This prompt violates our terms of service.')) {
         pError.textContent = "Ta requête ne respecte pas nos conditions d’utilisation."
+    } else if (error.message.includes('Not enough credits')) {
+        pError.textContent = "Tu n'as plus de crédits."
     }
     pError.classList.remove('d-none');
   } finally {
     // Re-enable button and remove loading class
     submitButton.disabled = false;
+    textarea.disabled = false;
     submitButton.classList.remove('loading');
   }
 });
@@ -73,3 +70,93 @@ window.addEventListener("DOMContentLoaded", async () => {
     console.error("Error fetching image:", err);
   }
 });
+
+
+async function generateImage(promptText) {
+    const response = await post(import.meta.env.VITE_API_URL + 'subscribed/image', {
+        prompt: promptText,
+        ratio: 'square',
+    })
+    if (!response.ok) {
+        throw new Error(`${response.status}: ${await response.text()}`)
+    }
+    const data = await response.json();
+    return data;
+}
+
+function getDistributedIntegers(min, max, count) {
+    const result = [];
+    const range = max - min;
+    const segmentSize = range / count;
+
+    for (let i = 0; i < count; i++) {
+        const segmentMin = Math.floor(min + i * segmentSize);
+        const segmentMax = Math.floor(min + (i + 1) * segmentSize) - 1;
+        const value = Math.floor(Math.random() * (segmentMax - segmentMin + 1)) + segmentMin;
+        result.push(value);
+    }
+
+    return result;
+}
+
+
+async function startProgressBarWithImageGeneration(promptText) {
+    const barEl = document.querySelector('#generation-progress .progress-bar');
+    if (!barEl) return;
+    document.querySelector('#generation-progress').classList.remove('d-none');
+
+    // Reset to 0
+    updateProgressBar(0);
+    
+    const averageDuration = 30000 // 30 seconds
+    const averageDelay = 1000 // 1 second
+    const minimumNumberOfStops = Math.floor(averageDuration / averageDelay * 0.8)
+    const maximumNumberOfStops = Math.floor(averageDuration / averageDelay * 1.2)
+    const numberOfStops = Math.floor(Math.random() * (maximumNumberOfStops - minimumNumberOfStops + 1)) + minimumNumberOfStops;
+    const stops = getDistributedIntegers(0, 95, numberOfStops);
+    console.log(minimumNumberOfStops, maximumNumberOfStops, stops)
+
+    let isDone = false;
+    let resolveImage;
+    let rejectImage;
+    const imagePromise = new Promise((resolve, reject) => {
+        resolveImage = resolve;
+        rejectImage = reject;
+    });
+
+    // Launch image generation
+    const imageGenPromise = generateImage(promptText).then((data) => {
+        isDone = true;
+        updateProgressBar(100);
+        resolveImage(data);
+    }).catch((error) => {
+        isDone = true;
+        updateProgressBar(100);
+        rejectImage(error); // Pass the error to the rejection
+    });
+
+    // Run animation phases
+    (async () => {
+        for (const stop of stops) {
+            const pause = averageDelay - 250 + Math.random() * 500; // 0.5sec around the average delay
+            console.log(pause)
+            await delay(pause)
+            if (isDone) return;
+            updateProgressBar(stop);
+            if (isDone) return;
+        }
+    })();
+
+    return imagePromise;
+}
+
+function updateProgressBar(value) {
+    const barEl = document.querySelector('#generation-progress .progress-bar');
+    barEl.style.width = `${value}%`;
+    barEl.setAttribute('aria-valuenow', value.toString());
+    barEl.querySelector('span').textContent = `${Math.round(value)}%`;
+}
+
+function delay(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}

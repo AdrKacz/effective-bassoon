@@ -37,7 +37,10 @@
                     <div class="ratio ratio-1x1"><img class="rounded object-fit-cover" id="generated-image" src="/assets/img/products/1.jpg"></div>
                 </div>
                 <div class="col-md-6 d-flex flex-column justify-content-between">
-                    <form class="d-flex flex-column justify-content-center align-items-center gap-3" id="generate-image"><textarea class="form-control" name="prompt" placeholder="Imagine ..." autofocus="" spellcheck="true" wrap="soft" maxlength="512" required="" rows="5"></textarea><input class="btn btn-primary" type="submit" value="Générer" name="submit">
+                    <form class="d-flex flex-column justify-content-center align-items-center gap-3" id="generate-image"><textarea class="form-control" name="prompt" placeholder="Imagine ..." autofocus="" spellcheck="true" wrap="soft" maxlength="512" required="" rows="5"></textarea><input class="btn btn-primary w-100" type="submit" value="Générer" name="submit">
+                        <div class="progress d-none w-100" id="generation-progress" style="height: 0.5em;">
+                            <div class="progress-bar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"><span class="visually-hidden">0%</span></div>
+                        </div>
                         <p class="text-center text-white-50 d-none" id="remaining-credits">Il te reste&nbsp;<span>10</span>&nbsp;crédits.</p>
                         <p class="text-center text-white-50 d-none" id="no-more-credits">Il ne te reste plus aucun crédit pour la période en cours.</p>
                         <p class="text-center text-white-50 d-none" id="generation-error">Oups, quelque chose s’est mal passé.</p>

@@ -51,6 +51,7 @@ export default $config({
       url: true,
       handler: "src/index.handler",
       link: [bucket, table, auth],
+      timeout: "1 minute",
       permissions: [
         {
           actions: ["bedrock:InvokeModel"],
