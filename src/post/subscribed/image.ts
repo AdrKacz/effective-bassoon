@@ -151,55 +151,63 @@ export async function postImage(c: Context<{ Variables: User }>) {
         const now = (new Date()).toISOString()
         const fileName = `users/${userId}/images/${now}.png`;
         const smallFileName = `users/${userId}/images/${now}-small.png`;
-        await bucket.send(new PutObjectCommand({
-            Bucket: Resource.Bucket.name,
-            Key: fileName,
-            Body: imageBuffer,
-            ContentType: 'image/png',
-        }));
-        await bucket.send(new PutObjectCommand({
-            Bucket: Resource.Bucket.name,
-            Key: smallFileName,
-            Body: smallImageBuffer,
-            ContentType: 'image/png',
-        }));
-        console.log(`Images uploaded to S3: ${fileName} and ${smallFileName}`);
-        // Save metadata to DynamoDB (userId, fileName, date, prompt, ratio)
-        await ddb.send(new PutCommand({
-            TableName: Resource.Table.name,
-            Item: {
-                pk: `user#${userId}`,
-                sk: `image#${fileName}`,
-                date: now,
-                prompt,
-                ratio,
-                smallFileName,
-            },
-        }));
 
-        // Generate a signed URL for the uploaded image
-        const command = new GetObjectCommand({
-            Bucket: Resource.Bucket.name,
-            Key: fileName,
-        });
-        const url = await getSignedUrl(bucket, command, { expiresIn: 3600 }); // 1 hour expiration
+        await Promise.all([
+            bucket.send(new PutObjectCommand({
+                Bucket: Resource.Bucket.name,
+                Key: fileName,
+                Body: imageBuffer,
+                ContentType: 'image/png',
+            })),
+            bucket.send(new PutObjectCommand({
+                Bucket: Resource.Bucket.name,
+                Key: smallFileName,
+                Body: smallImageBuffer,
+                ContentType: 'image/png',
+            }))
+        ])
+        console.log(`Images uploaded to S3: ${fileName} and ${smallFileName}`);
+
+        const outputs = await Promise.all([
+            // Save metadata to DynamoDB (userId, fileName, date, prompt, ratio)
+            ddb.send(new PutCommand({
+                TableName: Resource.Table.name,
+                Item: {
+                    pk: `user#${userId}`,
+                    sk: `image#${fileName}`,
+                    date: now,
+                    prompt,
+                    ratio,
+                    smallFileName,
+                },
+            })),
+            // Generate a signed URL for the uploaded image
+            getSignedUrl(bucket, new GetObjectCommand({
+                Bucket: Resource.Bucket.name,
+                Key: fileName,
+            }), { expiresIn: 3600 }), // 1 hour expiration
+            // Remove 1 to remaining credits
+            ddb.send(new UpdateCommand({
+                TableName: Resource.Table.name,
+                Key: {
+                    pk: `user#${userId}`,
+                    sk: 'metadata',
+                },
+                UpdateExpression: 'ADD #remaining_credits :credits',
+                ExpressionAttributeNames: {
+                    '#remaining_credits': 'remaining_credits',
+                },
+                ExpressionAttributeValues: {
+                    ':credits': -1,
+                },
+                ReturnValues: 'ALL_NEW',
+            }))
+        ]);
+        const url = outputs[1]
+        console.log(`Signed URL: ${url}`);
 
         // Remove 1 to remaining credits
-        const user = await ddb.send(new UpdateCommand({
-            TableName: Resource.Table.name,
-            Key: {
-                pk: `user#${userId}`,
-                sk: 'metadata',
-            },
-            UpdateExpression: 'ADD #remaining_credits :credits',
-            ExpressionAttributeNames: {
-                '#remaining_credits': 'remaining_credits',
-            },
-            ExpressionAttributeValues: {
-                ':credits': -1,
-            },
-            ReturnValues: 'ALL_NEW',
-        }))
+        const user = outputs[2]
         console.log(`Remaining credits for user ${userId}: ${user.Attributes?.remaining_credits?.value}`);
 
         return c.json({
