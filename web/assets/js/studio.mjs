@@ -114,7 +114,6 @@ async function startProgressBarWithImageGeneration(promptText) {
     const maximumNumberOfStops = Math.floor(averageDuration / averageDelay * 1.2)
     const numberOfStops = Math.floor(Math.random() * (maximumNumberOfStops - minimumNumberOfStops + 1)) + minimumNumberOfStops;
     const stops = getDistributedIntegers(0, 95, numberOfStops);
-    console.log(minimumNumberOfStops, maximumNumberOfStops, stops)
 
     let isDone = false;
     let resolveImage;
@@ -139,7 +138,6 @@ async function startProgressBarWithImageGeneration(promptText) {
     (async () => {
         for (const stop of stops) {
             const pause = averageDelay - 250 + Math.random() * 500; // 0.5sec around the average delay
-            console.log(pause)
             await delay(pause)
             if (isDone) return;
             updateProgressBar(stop);
