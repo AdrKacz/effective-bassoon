@@ -27,7 +27,7 @@
                     <li class="nav-item"><a class="nav-link private-tab" href="/studio">Studio</a></li>
                     <li class="nav-item"><a class="nav-link private-tab" href="/galerie">Galerie</a></li>
                     <li class="nav-item"><a class="nav-link" href="/contacts">Contact</a></li>
-                </ul><a class="btn btn-primary shadow d-none" role="button" id="login" href="/">Se connecter</a><button class="btn btn-outline-primary shadow" id="logout" type="button">Se déconnecter</button>
+                </ul><a class="btn btn-primary shadow d-none" role="button" id="login" href="/" data-umami-event="Log in">Se connecter</a><button class="btn btn-outline-primary shadow" id="logout" type="button" data-umami-event="Log out">Se déconnecter</button>
             </div>
         </div>
     </nav>
@@ -129,7 +129,7 @@
                             <div class="mb-3"><input class="form-control" type="text" id="name-1" name="name" placeholder="Nom"></div>
                             <div class="mb-3"><input class="form-control" type="email" id="email-1" name="email" placeholder="Email"></div>
                             <div class="mb-3"><textarea class="form-control" id="message-1" name="message" rows="6" placeholder="Message"></textarea></div>
-                            <div><button class="btn btn-primary shadow d-block w-100" type="submit">Envoyer</button></div>
+                            <div><button class="btn btn-primary shadow d-block w-100" type="submit" data-umami-event="Submit contact form">Envoyer</button></div>
                         </form>
                     </div>
                 </div>
@@ -141,7 +141,7 @@
                                 </svg></div>
                             <div class="px-2">
                                 <h6 class="fw-bold mb-0">Email</h6>
-                                <p class="text-muted mb-0"><a href="mailto:info@le-studio-k.fr">info@le-studio-k.fr</a></p>
+                                <p class="text-muted mb-0"><a href="mailto:info@le-studio-k.fr" data-umami-event="Mail to info">info@le-studio-k.fr</a></p>
                             </div>
                         </div>
                     </div>
