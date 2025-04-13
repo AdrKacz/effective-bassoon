@@ -7,6 +7,7 @@ interface ImportMetaEnv {
   readonly VITE_AUTH_URL: string
   readonly VITE_STRIPE_BASIC_PAYMENT_LINK: string
   readonly VITE_STRIPE_PRO_PAYMENT_LINK: string
+  readonly VITE_UMAMI_WEBSITE_ID: string
 }
 interface ImportMeta {
   readonly env: ImportMetaEnv

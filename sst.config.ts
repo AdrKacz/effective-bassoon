@@ -32,6 +32,8 @@ export default $config({
     const stripeBasicPaymentLink = new sst.Secret("StripeBasicPaymentLink")
     const stripeProPaymentLink = new sst.Secret("StripeProPaymentLink")
 
+    const umamiWebsiteId = new sst.Secret('UmamiWebsiteId')
+
     const bucket = new sst.aws.Bucket("Bucket")
 
     const table = new sst.aws.Dynamo("Table", {
@@ -87,6 +89,7 @@ export default $config({
         VITE_AUTH_URL: auth.url,
         VITE_STRIPE_BASIC_PAYMENT_LINK: stripeBasicPaymentLink.value,
         VITE_STRIPE_PRO_PAYMENT_LINK: stripeProPaymentLink.value,
+        VITE_UMAMI_WEBSITE_ID: umamiWebsiteId.value,
       },
       domain: $app.stage === "production" ? {
         name: domain,
