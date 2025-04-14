@@ -6,7 +6,7 @@ const REFRESH_TOKEN_KEY = 'refresh_token'
 const CHALLENGE_VERIFIER_KEY = 'challenge_verifier'
 const REDIRECT_URI_KEY = "redirect_uri"
 const LAST_VERIFIED_KEY = "last_verified"
-const PUBLIC_PAGES = ['/', '/contacts', '/pricing', '/terms', '/policy']
+const PUBLIC_PAGES = ['/', '/contacts', '/pricing', '/terms', '/policy', '/studio']
 
 const client = createClient({
   clientID: "le-studio",
@@ -18,6 +18,9 @@ const logoutButton = document.getElementById('logout');
 const overlayDiv = document.querySelector('.subscription-overlay');
 const paymentButtons = document.querySelectorAll('a.payment-button');
 const pPaymentConnectionDetails = document.querySelectorAll('p.payment-connection-details');
+const onboardingSection = document.getElementById('onboarding'); // When not onboarded yet
+const loginOnboardingLink = document.getElementById('login-onboarding');
+const onboardedSection = document.getElementById('onboarded'); // When already onboarded
 
 export async function get(url) {
     const response = await fetch(url, {
@@ -51,6 +54,7 @@ async function authenticate() {
         }
         const user = await response.json()
         if (typeof user['email'] === 'string') {
+            umami.identify({ email: user['email'] });
             for (const b of paymentButtons) {
                 const url = new URL(b.href);
                 url.searchParams.append("prefilled_email", user['email']);
@@ -65,9 +69,9 @@ async function authenticate() {
             console.log('You are subscribed.')
         } else {
             console.log('You are not subscribed.')
-            if (overlayDiv) {
-                overlayDiv.classList.remove('d-none');
-            }
+            if (overlayDiv) overlayDiv.classList.remove('d-none');
+            if (onboardingSection) onboardingSection.classList.remove('d-none');
+            if (onboardedSection) onboardedSection.classList.add('d-none');
         }
     } catch (error) {
         console.error('Error fetching user:', error);
@@ -144,14 +148,27 @@ async function setup() {
     loginButton.classList.remove('d-none')
     document.querySelectorAll('nav .private-tab').forEach(item => item.classList.add('d-none'))
     const { challenge, url } = await client.authorize(window.location.origin + "/studio", "code", { pkce: true })
-    localStorage.setItem(REDIRECT_URI_KEY, window.location.origin + "/studio");
-    localStorage.setItem(CHALLENGE_VERIFIER_KEY, challenge.verifier);
-    loginButton.href = url;
+    loginButton.href = url
+    loginButton.addEventListener('click', (event) => {
+        localStorage.setItem(REDIRECT_URI_KEY, window.location.origin + "/studio");
+        localStorage.setItem(CHALLENGE_VERIFIER_KEY, challenge.verifier);
+    })
+    
+    if (onboardingSection) onboardingSection.classList.remove('d-none');
+    if (onboardedSection) onboardedSection.classList.add('d-none');
+    if (loginOnboardingLink) {
+        const onboardingRedirect = await client.authorize(window.location.origin + "/pricing", "code", { pkce: true })
+        loginOnboardingLink.href = onboardingRedirect.url
+        
+        loginOnboardingLink.addEventListener('click', (event) => {
+            localStorage.setItem(REDIRECT_URI_KEY, window.location.origin + "/pricing");
+            localStorage.setItem(CHALLENGE_VERIFIER_KEY, onboardingRedirect.challenge.verifier);
+        })
+    }
 }
 setup()
 
 
 logoutButton.addEventListener('click', () => {
-    localStorage.clear();
-    window.location.reload();
+    localStorage.clear()
 })

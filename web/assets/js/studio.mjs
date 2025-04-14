@@ -5,12 +5,13 @@ const textarea = form.querySelector('textarea[name="prompt"]');
 const submitButton = form.querySelector('input[type="submit"]');
 const imageElement = document.getElementById('generated-image');
 const pRemainingCredits = document.getElementById('remaining-credits');
-const pRemainingCreditsSpan = pRemainingCredits.querySelector('span');
 const pNoMoreCredits = document.getElementById('no-more-credits');
 const pError = document.getElementById('generation-error')
 if (pError) {
     pError.dataset['originaltext'] = pError.textContent;
 }
+
+const contactUsHtml = 'Plus beaucoup de crédits… <a href="/contacts.html">Contacte-nous</a> pour faire le plein avant la prochaine recharge.'
 
 
 form.addEventListener('submit', async (event) => {
@@ -31,8 +32,14 @@ form.addEventListener('submit', async (event) => {
     if (remainingCredits === 0) {
         pRemainingCredits.classList.add('d-none');
         pNoMoreCredits.classList.remove('d-none');
+    } else if (remainingCredits === 1) {
+        pRemainingCredits.innerHTML = `Il te reste <strong>1</strong> crédit. ${contactUsHtml}`;
+        pRemainingCredits.classList.remove('d-none');
+    } else if (remainingCredits <= 5) {
+        pRemainingCredits.innerHTML = `Il te reste <strong>${remainingCredits}</strong> crédits. ${contactUsHtml}`;
+        pRemainingCredits.classList.remove('d-none');
     } else {
-        pRemainingCreditsSpan.textContent = remainingCredits;
+        pRemainingCredits.innerHTML = `Il te reste <strong>${remainingCredits}</strong> crédits.`;
         pRemainingCredits.classList.remove('d-none');
     }
   } catch (error) {
@@ -40,7 +47,9 @@ form.addEventListener('submit', async (event) => {
     if (error.message.includes('This prompt violates our terms of service.')) {
         pError.textContent = "Ta requête ne respecte pas nos conditions d’utilisation."
     } else if (error.message.includes('Not enough credits')) {
-        pError.textContent = "Tu n'as plus de crédits."
+        pError.textContent = "Tu n'as pas de crédits."
+    } else if (error.message.includes('Unauthorized')) {
+        pError.textContent = "Tu n'es pas connecté."
     }
     pError.classList.remove('d-none');
   } finally {
