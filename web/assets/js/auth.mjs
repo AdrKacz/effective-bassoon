@@ -158,7 +158,6 @@ setup().then(() => {
             console.error('Display condition unknown:', condition)
         }
     });
-    
     document.dispatchEvent(new Event("setup:done"));
 })
 

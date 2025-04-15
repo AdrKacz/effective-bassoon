@@ -75,24 +75,24 @@ form.addEventListener('submit', async (event) => {
     }
 });
 
-window.addEventListener("setup:done", async () => {
-  const params = new URLSearchParams(window.location.search);
-  const filename = params.get("filename");
+document.addEventListener("setup:done", async () => {
+    const params = new URLSearchParams(window.location.search);
+    const filename = params.get("filename");
 
-  if (!filename) return;
+    if (!filename) return;
 
-  try {
-    const url = new URL("/subscribed/image", import.meta.env.VITE_API_URL)
-    url.searchParams.set("filename", filename)
-    const res = await get(url);
-    if (!res.ok) throw new Error("Failed to fetch image");
+    try {
+        const url = new URL("/subscribed/image", import.meta.env.VITE_API_URL)
+        url.searchParams.set("filename", filename)
+        const res = await get(url);
+        if (!res.ok) throw new Error("Failed to fetch image");
 
-    const data = await res.json();
-    imageElement.src = data.url;
-    textarea.value = data.prompt;
-  } catch (err) {
-    console.error("Error fetching image:", err);
-  }
+        const data = await res.json();
+        imageElement.src = data.url;
+        textarea.value = data.prompt;
+    } catch (err) {
+        console.error("Error fetching image:", err);
+    }
 });
 
 
