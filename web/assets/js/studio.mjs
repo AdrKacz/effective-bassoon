@@ -9,6 +9,7 @@ const pRemainingCredits = document.getElementById('remaining-credits');
 const pGetMoreCredits = document.getElementById('get-more-credits');
 const pGetSubscription = document.getElementById('get-subscription');
 const pNoMoreCredits = document.getElementById('no-more-credits');
+
 const pError = document.getElementById('generation-error')
 
 if (pError) pError.dataset['originaltext'] = pError.textContent;
@@ -31,25 +32,28 @@ form.addEventListener('submit', async (event) => {
     pError.classList.add('d-none');
     pError.textContent = pError.dataset['originaltext'];
     
+    // Re-init information messages
+    pRemainingCredits.classList.add('d-none');
+    pGetMoreCredits.classList.add('d-none');
+    pGetSubscription.classList.add('d-none');
+    pNoMoreCredits.classList.add('d-none');
+    
     try {
         const data = await startProgressBarWithImageGeneration(textarea.value);
         imageElement.src = data.url; // Display image
         
         // Display information messages
-        const remainingCredits = data['remaining_credits'];
-        const isSubscribed = getUser()['is_subscribed']
+        const remainingCredits = parseInt(data['remaining_credits']);
         if (remainingCredits === 0) {
-            pRemainingCredits.classList.add('d-none'); // Hide remaining credits
             // Show options to get more credits
-            if (!isSubscribed) pGetSubscription.classList.remove('d-none');
+            if (!getUser()['is_subscribed']) pGetSubscription.classList.remove('d-none');
             else pNoMoreCredits.classList.remove('d-none');
         } else {
             // Show remaining credits
             pRemainingCredits.innerHTML = getRemainingCreditsHtml(remainingCredits)
             pRemainingCredits.classList.remove('d-none');
             // Show options to get more credits if running low
-            if (isSubscribed && remainingCredits <= 5) pGetMoreCredits.classList.remove('d-none');
-            else pGetMoreCredits.classList.add('d-none');
+            if (getUser()['is_subscribed'] && remainingCredits <= 5) pGetMoreCredits.classList.remove('d-none');
         }
     } catch (error) {
         console.error(error);

@@ -6,11 +6,20 @@ import { GetCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import Stripe from 'stripe'
 
 const updateExpression = `SET #stripe_subscription = :subscription,
-#remaining_credits = :remaining_credits,
 #subscription_end_date = :subscription_end_date,
 #stripe_customer = :stripe_customer,
 #stripe_customer_email = :stripe_customer_email,
-#stripe_customer_name = :stripe_customer_name`
+#stripe_customer_name = :stripe_customer_name
+ADD #remaining_credits :remaining_credits`
+
+const expressionAttributeNames: any = {
+    '#stripe_subscription': 'stripe_subscription',
+    '#subscription_end_date': 'subscription_end_date',
+    '#stripe_customer': 'stripe_customer',
+    '#stripe_customer_email': 'stripe_customer_email',
+    '#stripe_customer_name': 'stripe_customer_name',
+    '#remaining_credits': 'remaining_credits',
+}
 
 const stripe = new Stripe(Resource.StripeAPIKey.value)
 const endpointSecret = Resource.StripeEndpointSecret.value
@@ -40,7 +49,7 @@ app.post('/webhook', async (c) => {
     // Handle the event
     switch (event.type) {
         case 'invoice.payment_succeeded':
-            console.log('Payment succeeded')
+            console.log('Received invoice.payment_succeeded event')
             console.log(JSON.stringify(event))
             const invoice = event.data.object as Stripe.Invoice
 
@@ -70,6 +79,7 @@ app.post('/webhook', async (c) => {
                 console.log(`Subscription or paidAt is not a string or number`)
                 return c.text('Invalid subscription or paidAt', 400)
             }
+            console.log(`Received ${(total / 100).toFixed(2)} EUR from ${customerEmail} at ${new Date(paidAt * 1000).toISOString()} (subscription: ${subscription})`)
 
             const user = await ddb.send(new GetCommand({
                 TableName: Resource.Table.name,
@@ -83,84 +93,39 @@ app.post('/webhook', async (c) => {
                 return c.text('User not found', 404)
             }
 
-            // If stripe_subscription is empty, we consider it's a first time subscription
-            // If it's a first time subscription and the total paid is 0 eur, we consider it's a free trial
-            // We add 10 to remaining_credits and set subscription_end_date to paidAtDate + 8 days (extra days in case of delay)
-            if (total === 0 && typeof user.Item.stripe_subscription === 'undefined') {
-                console.log(`${customerEmail} is a new user and paid 0 eur: adding 10 credits for free trial`)
-                const subscriptionEndDate = new Date(paidAt * 1000 + 8 * 24 * 60 * 60 * 1000).toISOString()
-                const expressionAttributeNames: any = {
-                    '#stripe_subscription': 'stripe_subscription',
-                    '#remaining_credits': 'remaining_credits',
-                    '#subscription_end_date': 'subscription_end_date',
-                    '#stripe_customer': 'stripe_customer',
-                    '#stripe_customer_email': 'stripe_customer_email',
-                    '#stripe_customer_name': 'stripe_customer_name',
-                }
-                const expressionAttributeValues: any = {
-                    ':subscription': subscription,
-                    ':remaining_credits': 10,
-                    ':subscription_end_date': subscriptionEndDate,
-                    ':stripe_customer': customer,
-                    ':stripe_customer_email': customerEmail,
-                    ':stripe_customer_name': customerName,
-                }
-                if (typeof customerPhone === 'string') {
-                    expressionAttributeNames['#stripe_customer_phone'] = 'stripe_customer_phone'
-                    expressionAttributeValues[':stripe_customer_phone'] = customerPhone
-                }
-                await ddb.send(new UpdateCommand({
-                    TableName: Resource.Table.name,
-                    Key: {
-                        pk: `user#${customerEmail}`,
-                        sk: 'metadata',
-                    },
-                    UpdateExpression: updateExpression,
-                    ExpressionAttributeNames: expressionAttributeNames,
-                    ExpressionAttributeValues: expressionAttributeValues,
-                }))
-            } else if (total === 1000) { // Else, if the total paid is 10 eur, we add 100 to remaining_credits and set subscription_end_date to paidAtDate + 32 days (extra days in case of delay)
+            const expressionAttributeValues: any = {
+                ':subscription': subscription,
+                ':subscription_end_date': new Date(paidAt * 1000 + 32 * 24 * 60 * 60 * 1000).toISOString(), // 32 days, add 2 extra days in case of delay
+                ':stripe_customer': customer,
+                ':stripe_customer_email': customerEmail,
+                ':stripe_customer_name': customerName,
+            }
+            if (typeof customerPhone === 'string') {
+                expressionAttributeNames['#stripe_customer_phone'] = 'stripe_customer_phone'
+                expressionAttributeValues[':stripe_customer_phone'] = customerPhone
+            }
+
+            if (total === 1000) { // Else, if the total paid is 10 eur, we add 100 to remaining_credits and set subscription_end_date to paidAtDate + 32 days (extra days in case of delay)
                 console.log(`${customerEmail} paid 10 eur: adding 100 credits`)
-                const subscriptionEndDate = new Date(paidAt * 1000 + 32 * 24 * 60 * 60 * 1000).toISOString()
-                await ddb.send(new UpdateCommand({
-                    TableName: Resource.Table.name,
-                    Key: {
-                        pk: `user#${customerEmail}`,
-                        sk: 'metadata',
-                    },
-                    UpdateExpression: 'SET #subscription_end_date = :end_date ADD #remaining_credits :credits',
-                    ExpressionAttributeNames: {
-                        '#subscription_end_date': 'subscription_end_date',
-                        '#remaining_credits': 'remaining_credits',
-                    },
-                    ExpressionAttributeValues: {
-                        ':end_date': subscriptionEndDate,
-                        ':credits': 100,
-                    },
-                }))
+                expressionAttributeValues[':remaining_credits'] = 100
             } else if (total === 2000) { // Else, if the total paid is 20 eur, we add 300 to remaining_credits and set subscription_end_date to paidAtDate + 32 days (extra days in case of delay)
                 console.log(`${customerEmail} paid 20 eur: adding 300 credits`)
-                const subscriptionEndDate = new Date(paidAt * 1000 + 32 * 24 * 60 * 60 * 1000).toISOString()
-                await ddb.send(new UpdateCommand({
-                    TableName: Resource.Table.name,
-                    Key: {
-                        pk: `user#${customerEmail}`,
-                        sk: 'metadata',
-                    },
-                    UpdateExpression: 'SET #subscription_end_date = :end_date ADD #remaining_credits :credits',
-                    ExpressionAttributeNames: {
-                        '#subscription_end_date': 'subscription_end_date',
-                        '#remaining_credits': 'remaining_credits',
-                    },
-                    ExpressionAttributeValues: {
-                        ':end_date': subscriptionEndDate,
-                        ':credits': 300,
-                    },
-                }))
+                expressionAttributeValues[':remaining_credits'] = 300
             } else {
                 console.log(`Unknown amount paid: ${total} eur`)
                 return c.text('Unknown amount paid', 400)
             }
+
+            await ddb.send(new UpdateCommand({
+                TableName: Resource.Table.name,
+                Key: {
+                    pk: `user#${customerEmail}`,
+                    sk: 'metadata',
+                },
+                UpdateExpression: updateExpression,
+                ExpressionAttributeNames: expressionAttributeNames,
+                ExpressionAttributeValues: expressionAttributeValues,
+            }))
             break
         default:
             console.log(`Unhandled event type ${event.type}`)
