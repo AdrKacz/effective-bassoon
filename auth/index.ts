@@ -15,6 +15,7 @@ async function getUser(id: string, args: any = {}) {
             Item: {
                 pk: `user#${id}`,
                 sk: 'metadata',
+                remaining_credits: 5, // We give 5 free credits to new users 
                 ...args,
             },
             ConditionExpression: 'attribute_not_exists(pk) AND attribute_not_exists(sk)',

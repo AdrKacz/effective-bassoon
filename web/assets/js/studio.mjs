@@ -1,66 +1,77 @@
-import { get, post } from "./auth";
+import { get, post, getUser } from "./auth";
 
 const form = document.getElementById('generate-image');
 const textarea = form.querySelector('textarea[name="prompt"]');
 const submitButton = form.querySelector('input[type="submit"]');
 const imageElement = document.getElementById('generated-image');
+
 const pRemainingCredits = document.getElementById('remaining-credits');
+const pGetMoreCredits = document.getElementById('get-more-credits');
+const pGetSubscription = document.getElementById('get-subscription');
 const pNoMoreCredits = document.getElementById('no-more-credits');
 const pError = document.getElementById('generation-error')
-if (pError) {
-    pError.dataset['originaltext'] = pError.textContent;
+
+if (pError) pError.dataset['originaltext'] = pError.textContent;
+
+function getRemainingCreditsHtml(value) {
+    let innerHtml = `Il te reste <strong>${value}</strong> crédit`;
+    if (value > 1) innerHtml += 's.';
+    else innerHtml += '.';
+    
+    return innerHtml;
 }
 
-const contactUsHtml = 'Plus beaucoup de crédits… <a href="/contacts.html">Contacte-nous</a> pour faire le plein avant la prochaine recharge.'
-
-
 form.addEventListener('submit', async (event) => {
-  event.preventDefault();
-  const promptText = textarea.value;
-
-  // Disable button and add loading class
-  submitButton.disabled = true;
-  textarea.disabled = true;
-  submitButton.classList.add('loading');
-  pError.textContent = pError.dataset['originaltext'];
-  pError.classList.add('d-none');
-
-  try {
-    const data = await startProgressBarWithImageGeneration(promptText);
-    imageElement.src = data.url;
-    const remainingCredits = data['remaining_credits'];
-    if (remainingCredits === 0) {
-        pRemainingCredits.classList.add('d-none');
-        pNoMoreCredits.classList.remove('d-none');
-    } else if (remainingCredits === 1) {
-        pRemainingCredits.innerHTML = `Il te reste <strong>1</strong> crédit. ${contactUsHtml}`;
-        pRemainingCredits.classList.remove('d-none');
-    } else if (remainingCredits <= 5) {
-        pRemainingCredits.innerHTML = `Il te reste <strong>${remainingCredits}</strong> crédits. ${contactUsHtml}`;
-        pRemainingCredits.classList.remove('d-none');
-    } else {
-        pRemainingCredits.innerHTML = `Il te reste <strong>${remainingCredits}</strong> crédits.`;
-        pRemainingCredits.classList.remove('d-none');
+    event.preventDefault(); // Don't reload the page
+    
+    // Disable inputs
+    submitButton.disabled = true;
+    textarea.disabled = true;
+    // Re-init errors (if any)
+    pError.classList.add('d-none');
+    pError.textContent = pError.dataset['originaltext'];
+    
+    try {
+        const data = await startProgressBarWithImageGeneration(textarea.value);
+        imageElement.src = data.url; // Display image
+        
+        // Display information messages
+        const remainingCredits = data['remaining_credits'];
+        const isSubscribed = getUser()['is_subscribed']
+        if (remainingCredits === 0) {
+            pRemainingCredits.classList.add('d-none'); // Hide remaining credits
+            // Show options to get more credits
+            if (!isSubscribed) pGetSubscription.classList.remove('d-none');
+            else pNoMoreCredits.classList.remove('d-none');
+        } else {
+            // Show remaining credits
+            pRemainingCredits.innerHTML = getRemainingCreditsHtml(remainingCredits)
+            pRemainingCredits.classList.remove('d-none');
+            // Show options to get more credits if running low
+            if (isSubscribed && remainingCredits <= 5) pGetMoreCredits.classList.remove('d-none');
+            else pGetMoreCredits.classList.add('d-none');
+        }
+    } catch (error) {
+        console.error(error);
+        if (error.message.includes('This prompt violates our terms of service.')) {
+            pError.textContent = "Ta requête ne respecte pas nos conditions d’utilisation."
+        } else if (error.message.includes('Not enough credits')) {
+            pError.textContent = ""
+            // Show options to get more credits
+            if (!getUser()['is_subscribed']) pGetSubscription.classList.remove('d-none');
+            else pNoMoreCredits.classList.remove('d-none');
+        } else if (error.message.includes('Unauthorized')) {
+            pError.textContent = "Tu n'es pas connecté."
+        }
+        if (pError.textContent) pError.classList.remove('d-none');
+    } finally {
+        // Re-enable inputs
+        submitButton.disabled = false;
+        textarea.disabled = false;
     }
-  } catch (error) {
-    console.error(error);
-    if (error.message.includes('This prompt violates our terms of service.')) {
-        pError.textContent = "Ta requête ne respecte pas nos conditions d’utilisation."
-    } else if (error.message.includes('Not enough credits')) {
-        pError.textContent = "Tu n'as pas de crédits."
-    } else if (error.message.includes('Unauthorized')) {
-        pError.textContent = "Tu n'es pas connecté."
-    }
-    pError.classList.remove('d-none');
-  } finally {
-    // Re-enable button and remove loading class
-    submitButton.disabled = false;
-    textarea.disabled = false;
-    submitButton.classList.remove('loading');
-  }
 });
 
-window.addEventListener("DOMContentLoaded", async () => {
+window.addEventListener("setup:done", async () => {
   const params = new URLSearchParams(window.location.search);
   const filename = params.get("filename");
 

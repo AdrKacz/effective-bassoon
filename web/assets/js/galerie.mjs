@@ -57,7 +57,7 @@ async function populate(next) {
     }
 } 
 
-document.addEventListener("DOMContentLoaded", populate)
+document.addEventListener("setup:done", populate)
 
 loadMoreButton.addEventListener("click", async () => {
     loadMoreButton.disabled = true

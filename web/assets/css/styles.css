@@ -1,4 +1,4 @@
-.subscription-overlay {
+.overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -9,16 +9,5 @@
   background-color: rgba(0,0,0,0.5);
   z-index: 10;
   pointer-events: auto;
-}
-
-.timeline::before {
-  content: '';
-  position: absolute;
-  left: 1.25rem;
-  top: 0.25rem;
-  bottom: 0;
-  width: 2px;
-  background-color: #dee2e6;
-  z-index: -1;
 }
 

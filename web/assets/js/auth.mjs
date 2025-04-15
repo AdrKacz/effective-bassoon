@@ -6,21 +6,18 @@ const REFRESH_TOKEN_KEY = 'refresh_token'
 const CHALLENGE_VERIFIER_KEY = 'challenge_verifier'
 const REDIRECT_URI_KEY = "redirect_uri"
 const LAST_VERIFIED_KEY = "last_verified"
-const PUBLIC_PAGES = ['/', '/contacts', '/pricing', '/terms', '/policy', '/studio']
+const USER_KEY = "user"
 
 const client = createClient({
   clientID: "le-studio",
   issuer: AUTH_URL
 })
 
-const loginButton = document.getElementById('login');
-const logoutButton = document.getElementById('logout');
-const overlayDiv = document.querySelector('.subscription-overlay');
 const paymentButtons = document.querySelectorAll('a.payment-button');
-const pPaymentConnectionDetails = document.querySelectorAll('p.payment-connection-details');
-const onboardingSection = document.getElementById('onboarding'); // When not onboarded yet
-const loginOnboardingLink = document.getElementById('login-onboarding');
-const onboardedSection = document.getElementById('onboarded'); // When already onboarded
+
+export function getUser() {
+    return JSON.parse(localStorage.getItem(USER_KEY))
+}
 
 export async function get(url) {
     const response = await fetch(url, {
@@ -49,11 +46,11 @@ async function authenticate() {
     // Retrieve the user authenticated and update UI if needed
     try {
         const response = await get(import.meta.env.VITE_API_URL + 'user')
-        if (!response.ok) {
-            throw new Error(`Failed to fetch user: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`Failed to fetch user: ${response.status}`);
+        
         const user = await response.json()
         if (typeof user['email'] === 'string') {
+            localStorage.setItem(USER_KEY, JSON.stringify(user));
             umami.identify({ email: user['email'] });
             for (const b of paymentButtons) {
                 const url = new URL(b.href);
@@ -61,27 +58,9 @@ async function authenticate() {
                 b.href = url.toString();
                 b.classList.remove('disabled');
             }
-            for (const p of pPaymentConnectionDetails) {
-                p.classList.add('d-none');
-            }
-        }
-        if (user['is_subscribed']) {
-            console.log('You are subscribed.')
-        } else {
-            console.log('You are not subscribed.')
-            if (overlayDiv) overlayDiv.classList.remove('d-none');
-            if (onboardingSection) onboardingSection.classList.remove('d-none');
-            if (onboardedSection) onboardedSection.classList.add('d-none');
         }
     } catch (error) {
         console.error('Error fetching user:', error);
-        console.log('We assume you are not subscribed.');
-        if (overlayDiv) {
-            overlayDiv.classList.remove('d-none');
-        }
-        for (const p of pPaymentConnectionDetails) {
-            p.classList.add('d-none');
-        }
     }
 }
 
@@ -112,7 +91,6 @@ async function setup() {
             const { access, refresh } = exchanged.tokens
             localStorage.setItem(ACCESS_TOKEN_KEY, access)
             localStorage.setItem(REFRESH_TOKEN_KEY, refresh)
-            loginButton.classList.add('d-none')
             return authenticate()
         }
     }
@@ -141,34 +119,50 @@ async function setup() {
             return authenticate()
         }
     }
-    if (!PUBLIC_PAGES.includes(window.location.pathname)) {
-      window.location.href = '/'
-    } 
-    logoutButton.classList.add('d-none')
-    loginButton.classList.remove('d-none')
-    document.querySelectorAll('nav .private-tab').forEach(item => item.classList.add('d-none'))
-    const { challenge, url } = await client.authorize(window.location.origin + "/studio", "code", { pkce: true })
-    loginButton.href = url
-    loginButton.addEventListener('click', (event) => {
-        localStorage.setItem(REDIRECT_URI_KEY, window.location.origin + "/studio");
-        localStorage.setItem(CHALLENGE_VERIFIER_KEY, challenge.verifier);
-    })
     
-    if (onboardingSection) onboardingSection.classList.remove('d-none');
-    if (onboardedSection) onboardedSection.classList.add('d-none');
-    if (loginOnboardingLink) {
-        const onboardingRedirect = await client.authorize(window.location.origin + "/pricing", "code", { pkce: true })
-        loginOnboardingLink.href = onboardingRedirect.url
-        
-        loginOnboardingLink.addEventListener('click', (event) => {
-            localStorage.setItem(REDIRECT_URI_KEY, window.location.origin + "/pricing");
-            localStorage.setItem(CHALLENGE_VERIFIER_KEY, onboardingRedirect.challenge.verifier);
-        })
-    }
+    // Prepare login buttons
+    document.querySelectorAll('a[data-event="Log in"]').forEach(async (link) => {
+        const href = link.getAttribute('href');
+        const { challenge, url } = await client.authorize(window.location.origin + href, "code", { pkce: true });
+        link.href = url;
+        link.addEventListener('click', (event) => {
+            localStorage.setItem(REDIRECT_URI_KEY, window.location.origin + href);
+            localStorage.setItem(CHALLENGE_VERIFIER_KEY, challenge.verifier);
+        });
+    });
 }
-setup()
+setup().then(() => {
+    const user = getUser();
+    
+    // Set indicators
+    const isConnected = user !== null;
+    let isSubscribed = false;
+    if (isConnected) isSubscribed = user['is_subscribed'] === true;
+    
+    // Update elements that have condition on user status
+    document.querySelectorAll('[display-condition]').forEach(el => {
+        const condition = el.getAttribute('display-condition');
+        if (condition === "connected") {
+            if (isConnected) el.classList.remove('d-none');
+            else el.classList.add('d-none');
+        } else if (condition === "subscribed") {
+            if (isSubscribed) el.classList.remove('d-none');
+            else el.classList.add('d-none');
+        } else if (condition === "not connected") {
+            if (!isConnected) el.classList.remove('d-none');
+            else el.classList.add('d-none');
+        } else if (condition === "not subscribed") {
+            if (!isSubscribed) el.classList.remove('d-none');
+            else el.classList.add('d-none');
+        } else {
+            console.error('Display condition unknown:', condition)
+        }
+    });
+    
+    document.dispatchEvent(new Event("setup:done"));
+})
 
 
-logoutButton.addEventListener('click', () => {
+document.getElementById('logout').addEventListener('click', () => {
     localStorage.clear()
 })
