@@ -15,7 +15,7 @@ const pError = document.getElementById('generation-error')
 if (pError) pError.dataset['originaltext'] = pError.textContent;
 
 function getRemainingCreditsHtml(value) {
-    let innerHtml = `Il te reste <strong>${value}</strong> crédit`;
+    let innerHtml = `Il te reste <strong>${value}</strong> image`;
     if (value > 1) innerHtml += 's.';
     else innerHtml += '.';
     

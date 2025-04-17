@@ -29,8 +29,9 @@ export default $config({
     const stripeAPIKey = new sst.Secret('StripeAPIKey')
     const stripeEndpointSecret = new sst.Secret('StripeEndpointSecret')
 
-    const stripeBasicPaymentLink = new sst.Secret("StripeBasicPaymentLink")
-    const stripeProPaymentLink = new sst.Secret("StripeProPaymentLink")
+    const stripeDecouvertePaymentLink = new sst.Secret("StripeDecouvertePaymentLink")
+    const stripeCreatifPaymentLink = new sst.Secret("StripeCreatifPaymentLink")
+    const stripeInspirationPaymentLink = new sst.Secret("StripeInspirationPaymentLink")
 
     const umamiWebsiteId = new sst.Secret('UmamiWebsiteId')
 
@@ -87,8 +88,9 @@ export default $config({
       environment: {
         VITE_API_URL: hono.url,
         VITE_AUTH_URL: auth.url,
-        VITE_STRIPE_BASIC_PAYMENT_LINK: stripeBasicPaymentLink.value,
-        VITE_STRIPE_PRO_PAYMENT_LINK: stripeProPaymentLink.value,
+        VITE_STRIPE_DECOUVERTE_PAYMENT_LINK: stripeDecouvertePaymentLink.value,
+        VITE_STRIPE_CREATIF_PAYMENT_LINK: stripeCreatifPaymentLink.value,
+        VITE_STRIPE_INSPIRATION_PAYMENT_LINK: stripeInspirationPaymentLink.value,
         VITE_UMAMI_WEBSITE_ID: umamiWebsiteId.value,
       },
       domain: $app.stage === "production" ? {

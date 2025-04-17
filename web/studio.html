@@ -33,7 +33,7 @@
                     <li class="nav-item"><a class="nav-link active" href="/studio">Studio</a></li>
                     <li class="nav-item"><a class="nav-link" href="/galerie" display-condition="connected">Galerie</a></li>
                     <li class="nav-item"><a class="nav-link" href="/contacts">Contact</a></li>
-                </ul><a class="btn btn-primary shadow d-none" role="button" href="/studio" data-event="Log in" data-event-type="Normal" display-condition="not connected">Se connecter</a><a class="btn btn-outline-primary shadow" role="button" id="logout" href="#" data-event="Log out" display-condition="connected">Se déconnecter</a>
+                </ul><a class="btn btn-primary shadow d-none" role="button" href="/studio" data-event="Log in" data-event-type="Navigation" display-condition="not connected">Se connecter</a><a class="btn btn-outline-primary shadow" role="button" id="logout" href="#" data-event="Log out" display-condition="connected">Se déconnecter</a>
             </div>
         </div>
     </nav>
@@ -55,16 +55,16 @@
                     <div class="ratio ratio-1x1"><img class="rounded object-fit-cover" id="generated-image" src="/assets/img/products/cool.png"></div>
                 </div>
                 <div class="col-md-6 flex-column justify-content-between">
-                    <form class="d-flex flex-column justify-content-center align-items-center gap-3 mb-3" id="generate-image"><textarea class="form-control" name="prompt" placeholder="Imagine ..." autofocus="" spellcheck="true" wrap="soft" maxlength="512" required="" rows="5"></textarea><input class="btn btn-primary w-100" type="submit" value="Générer" name="submit" data-event="Generate image">
+                    <form class="d-flex flex-column justify-content-center align-items-center gap-3 mb-3" id="generate-image"><textarea class="form-control" name="prompt" placeholder="Quelques mots suffisent..." autofocus="" spellcheck="true" wrap="soft" maxlength="512" required="" rows="5"></textarea><input class="btn btn-primary w-100" type="submit" value="Générer" name="submit" data-event="Generate image">
                         <div class="progress d-none w-100" id="generation-progress" style="height: 0.5em;">
                             <div class="progress-bar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"><span class="visually-hidden">0%</span></div>
                         </div>
                     </form>
                     <div>
-                        <p class="text-center text-white-50 d-none" id="remaining-credits">Il te reste 10 crédits.</p>
-                        <p class="text-center text-white-50 d-none" id="get-more-credits">Tu n'as plus beaucoup de crédits.&nbsp;<a href="/contacts">Contacte-nous</a>&nbsp;pour faire le plein avant la prochaine recharge.</p>
-                        <p class="text-center text-white-50 d-none" id="get-subscription">Tu n'as plus de crédit. Tu en veux encore ?&nbsp;<a href="/pricing">Découvre nos formules</a>.</p>
-                        <p class="text-center text-white-50 d-none" id="no-more-credits">Il ne te reste plus aucun crédit pour la période en cours.&nbsp;<a href="/contacts">Contacte-nous</a>&nbsp;pour faire le plein avant la prochain recharge.</p>
+                        <p class="text-center text-white-50 d-none" id="remaining-credits">Il te reste 10 images.</p>
+                        <p class="text-center text-white-50 d-none" id="get-more-credits">Tu n'as plus beaucoup d'images.&nbsp;<a href="/contacts">Contacte-nous</a>&nbsp;pour faire le plein avant la prochaine recharge.</p>
+                        <p class="text-center text-white-50 d-none" id="get-subscription">Tu n'as plus d'image. Tu en veux encore ?&nbsp;<a href="/pricing">Découvre nos formules</a>.</p>
+                        <p class="text-center text-white-50 d-none" id="no-more-credits">Il ne te reste plus aucune image pour la période en cours.&nbsp;<a href="/contacts">Contacte-nous</a>&nbsp;pour faire le plein avant la prochain recharge.</p>
                         <p class="text-center text-white-50 d-none" id="generation-error">Oups, quelque chose s’est mal passé.</p>
                     </div>
                 </div>
@@ -83,7 +83,7 @@
                 </div>
                 <div class="col-lg-3 text-center text-lg-start d-flex flex-column align-items-center order-first align-items-lg-start order-lg-last">
                     <div class="fw-bold d-flex align-items-center mb-2"><span class="bs-icon-md bs-icon-circle bs-icon-white d-flex justify-content-center align-items-center bs-icon me-2"><img src="/assets/img/logo-120.png" width="60px" height="60px"></span></div>
-                    <p class="text-muted">L'endroit où tes rêves prennent vie.</p>
+                    <p class="text-muted">L'intelligence artificielle pour tous.</p>
                 </div>
             </div>
             <hr>

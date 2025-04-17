@@ -39,7 +39,11 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
-    "StripeBasicPaymentLink": {
+    "StripeCreatifPaymentLink": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "StripeDecouvertePaymentLink": {
       "type": "sst.sst.Secret"
       "value": string
     }
@@ -47,7 +51,7 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
-    "StripeProPaymentLink": {
+    "StripeInspirationPaymentLink": {
       "type": "sst.sst.Secret"
       "value": string
     }
