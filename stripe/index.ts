@@ -105,7 +105,10 @@ app.post('/webhook', async (c) => {
                 expressionAttributeValues[':stripe_customer_phone'] = customerPhone
             }
 
-            if (total === 1000) { // Else, if the total paid is 10 eur, we add 100 to remaining_credits and set subscription_end_date to paidAtDate + 32 days (extra days in case of delay)
+            if (total === 500) { // If the total paid is 5 eur, we add 30 to remaining_credits and set subscription_end_date to paidAtDate + 32 days (extra days in case of delay)
+                console.log(`${customerEmail} paid 5 eur: adding 30 credits`)
+                expressionAttributeValues[':remaining_credits'] = 30
+            } else if (total === 1000) { // Else, if the total paid is 10 eur, we add 100 to remaining_credits and set subscription_end_date to paidAtDate + 32 days (extra days in case of delay)
                 console.log(`${customerEmail} paid 10 eur: adding 100 credits`)
                 expressionAttributeValues[':remaining_credits'] = 100
             } else if (total === 2000) { // Else, if the total paid is 20 eur, we add 300 to remaining_credits and set subscription_end_date to paidAtDate + 32 days (extra days in case of delay)
