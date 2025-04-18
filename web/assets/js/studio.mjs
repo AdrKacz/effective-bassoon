@@ -4,6 +4,7 @@ const form = document.getElementById('generate-image');
 const textarea = form.querySelector('textarea[name="prompt"]');
 const submitButton = form.querySelector('input[type="submit"]');
 const imageElement = document.getElementById('generated-image');
+const downloadLink = document.getElementById('download-image')
 
 const pRemainingCredits = document.getElementById('remaining-credits');
 const pGetMoreCredits = document.getElementById('get-more-credits');
@@ -37,10 +38,16 @@ form.addEventListener('submit', async (event) => {
     pGetMoreCredits.classList.add('d-none');
     pGetSubscription.classList.add('d-none');
     pNoMoreCredits.classList.add('d-none');
+        
+    // Re-init download link (not clear what should be download during the generation)
+    downloadLink.removeAttribute('href')
+    downloadLink.removeAttribute('download')
+    downloadLink.classList.add('d-none');
     
     try {
         const data = await startProgressBarWithImageGeneration(textarea.value);
         imageElement.src = data.url; // Display image
+        updateDownloadLink(data);
         
         // Display information messages
         const remainingCredits = parseInt(data['remaining_credits']);
@@ -75,6 +82,15 @@ form.addEventListener('submit', async (event) => {
     }
 });
 
+async function updateDownloadLink({ url, prompt }) {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    downloadLink.href = blobUrl;
+    downloadLink.download = prompt + '.png'
+    downloadLink.classList.remove('d-none');
+}
+
 document.addEventListener("setup:done", async () => {
     const params = new URLSearchParams(window.location.search);
     const filename = params.get("filename");
@@ -89,6 +105,7 @@ document.addEventListener("setup:done", async () => {
 
         const data = await res.json();
         imageElement.src = data.url;
+        updateDownloadLink(data);
         textarea.value = data.prompt;
     } catch (err) {
         console.error("Error fetching image:", err);

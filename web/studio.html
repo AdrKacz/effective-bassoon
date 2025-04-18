@@ -51,8 +51,8 @@
                 <div class="col d-flex justify-content-center"><a class="btn btn-primary" role="button" data-event="Log in" data-event-type="Onboarding" href="/studio">Je me connecte avec mon compte Google</a></div>
             </div>
             <div class="row">
-                <div class="col-md-6 order-last order-md-first">
-                    <div class="ratio ratio-1x1"><img class="rounded object-fit-cover" id="generated-image" src="/assets/img/products/cool.png"></div>
+                <div class="col-md-6 d-flex flex-column justify-content-center order-last order-md-first">
+                    <div class="ratio ratio-1x1"><img class="rounded object-fit-cover" id="generated-image" src="/assets/img/products/cool.png"></div><a class="btn btn-outline-primary d-none mt-3" role="button" id="download-image" data-event="Download image" download="">Télécharge l'image</a>
                 </div>
                 <div class="col-md-6 flex-column justify-content-between">
                     <form class="d-flex flex-column justify-content-center align-items-center gap-3 mb-3" id="generate-image"><textarea class="form-control" name="prompt" placeholder="Quelques mots suffisent..." autofocus="" spellcheck="true" wrap="soft" maxlength="512" required="" rows="5"></textarea><input class="btn btn-primary w-100" type="submit" value="Générer" name="submit" data-event="Generate image">

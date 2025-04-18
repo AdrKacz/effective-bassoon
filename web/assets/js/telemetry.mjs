@@ -17,14 +17,14 @@ document.querySelectorAll('[data-event]').forEach(el => {
       umami.track(eventName, Object.keys(data).length ? data : undefined);
     }
 
-    // If it's a link, prevent default and redirect after a short delay
-    if (isLink) {
-      e.preventDefault();
-      // Small delay to allow umami to fire (you can tweak this value)
-      setTimeout(() => {
-          if (href === '#') window.location.reload();
-          else window.location.href = href;  
-      }, 150); // 150ms is usually enough
+    // If it's a link, prevent default and redirect after a short delay (unless it's a download)
+    if (isLink && !el.hasAttribute('download')) {
+        e.preventDefault();
+        // Small delay to allow umami to fire (you can tweak this value)
+        setTimeout(() => {
+            if (href === '#') window.location.reload();
+            else window.location.href = href;  
+        }, 150); // 150ms is usually enough
     }
   });
 });
