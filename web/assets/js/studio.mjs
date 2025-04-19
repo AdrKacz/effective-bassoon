@@ -1,5 +1,7 @@
 import { get, post, getUser } from "./auth";
 
+const LOCAL_IMAGE = [null]
+
 const form = document.getElementById('generate-image');
 const textarea = form.querySelector('textarea[name="prompt"]');
 const submitButton = form.querySelector('input[type="submit"]');
@@ -85,9 +87,12 @@ form.addEventListener('submit', async (event) => {
 async function updateDownloadLink({ url, prompt }) {
     const response = await fetch(url);
     const blob = await response.blob();
+    const filename = prompt + '.png';
+    LOCAL_IMAGE[0] = { blob, filename };
+    
     const blobUrl = URL.createObjectURL(blob);
     downloadLink.href = blobUrl;
-    downloadLink.download = prompt + '.png'
+    downloadLink.download = filename;
     downloadLink.classList.remove('d-none');
 }
 
@@ -199,3 +204,17 @@ function updateProgressBar(value) {
 function delay(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+ downloadLink.addEventListener('click', async (event) => {
+     if (LOCAL_IMAGE[0] === null) {
+         return;
+     }
+    const file = new File([LOCAL_IMAGE[0].blob], LOCAL_IMAGE[0].filename, {
+        type: LOCAL_IMAGE[0].blob.type,
+    });
+    const data = { files: [file] };
+    if (navigator.canShare && navigator.canShare(data)) {
+        event.preventDefault();
+        navigator.share(data);
+    }
+})

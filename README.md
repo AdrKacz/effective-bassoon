@@ -37,6 +37,5 @@ You can now **restart Firefox** to start using you brand new certificate. You ca
 - Remove backgrounds with https://www.remove.bg
 
 ## TODO
-Add error message when no more credits (not only after image creation)
 Send email with invoice and link to manage subscription
 Cancel on payment cancelled
