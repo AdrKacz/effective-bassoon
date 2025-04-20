@@ -5,8 +5,8 @@ const ACCESS_TOKEN_KEY = 'access_token'
 const REFRESH_TOKEN_KEY = 'refresh_token'
 const CHALLENGE_VERIFIER_KEY = 'challenge_verifier'
 const REDIRECT_URI_KEY = "redirect_uri"
-const LAST_VERIFIED_KEY = "last_verified"
 const USER_KEY = "user"
+const CLICK_ID_KEY = "click_id"
 
 const client = createClient({
   clientID: "le-studio",
@@ -65,18 +65,24 @@ async function authenticate() {
 }
 
 async function setup() {
-    // Try to read code and state from query string
     const params = new URLSearchParams(window.location.search)
+    // Read fbclid and store it if any
+    const fbclid = params.get('fbclid')
+    if (typeof fbclid === "string") localStorage.setItem(CLICK_ID_KEY, `fb.1.${Date.now()}.${fbclid}`);
+    
+    // Try to read code and state from query string
     const code = params.get('code')
     const state = params.get('state')
     const challengeVerifier = localStorage.getItem(CHALLENGE_VERIFIER_KEY)
     const redirectUri = localStorage.getItem(REDIRECT_URI_KEY)
     
     // Clean URL
-    if (typeof code === "string" && typeof state === "string") {
+    if (typeof fbclid === "string" || typeof code === "string" || typeof state === "string" || typeof params.get('cid') === "string") {
         const url = new URL(window.location.href);
+        url.searchParams.delete('fbclid');
         url.searchParams.delete('code');
         url.searchParams.delete('state');
+        url.searchParams.delete('cid'); // We don't need it
         window.history.replaceState({}, document.title, url.pathname + url.search);
     }
     
@@ -98,24 +104,17 @@ async function setup() {
     // Verify login information
     const accessToken = localStorage.getItem(ACCESS_TOKEN_KEY)
     if (accessToken) {
-        const lastVerified = localStorage.getItem(LAST_VERIFIED_KEY)
-        // Only re-verify once an hour on the client
-        if (!lastVerified || (new Date() - new Date(lastVerified)) > 60 * 60 * 1000) {
-            const verified = await client.verify(subjects, accessToken, {
-                refresh: localStorage.getItem(REFRESH_TOKEN_KEY)
-            })
-            if (verified.err) {
-                console.log("Cannot verify token", verified.err)
-            } else {
-                localStorage.setItem(LAST_VERIFIED_KEY, (new Date()).toISOString());
-                if (verified.tokens) {
-                    const { access, refresh } = verified.tokens
-                    localStorage.setItem(ACCESS_TOKEN_KEY, access)
-                    localStorage.setItem(REFRESH_TOKEN_KEY, refresh)
-                }
-                return authenticate()
-            }
+        const verified = await client.verify(subjects, accessToken, {
+            refresh: localStorage.getItem(REFRESH_TOKEN_KEY)
+        })
+        if (verified.err) {
+            console.log("Cannot verify token", verified.err) // Continue logged out
         } else {
+            if (verified.tokens) {
+                const { access, refresh } = verified.tokens
+                localStorage.setItem(ACCESS_TOKEN_KEY, access)
+                localStorage.setItem(REFRESH_TOKEN_KEY, refresh)
+            }
             return authenticate()
         }
     }
@@ -123,10 +122,15 @@ async function setup() {
     // Prepare login buttons
     document.querySelectorAll('a[data-event="Log in"]').forEach(async (link) => {
         const href = link.getAttribute('href');
-        const { challenge, url } = await client.authorize(window.location.origin + href, "code", { pkce: true });
-        link.href = url;
+        const redirectUri = window.location.origin + href;
+        const { challenge, url } = await client.authorize(redirectUri, "code", { pkce: true });
+        const urlObject = new URL(url);
+        if (typeof localStorage.getItem(CLICK_ID_KEY) === "string") {
+            urlObject.searchParams.set("state", btoa(JSON.stringify({ cid: localStorage.getItem(CLICK_ID_KEY) })));
+        }
+        link.href = urlObject.toString();
         link.addEventListener('click', (event) => {
-            localStorage.setItem(REDIRECT_URI_KEY, window.location.origin + href);
+            localStorage.setItem(REDIRECT_URI_KEY, redirectUri);
             localStorage.setItem(CHALLENGE_VERIFIER_KEY, challenge.verifier);
         });
     });

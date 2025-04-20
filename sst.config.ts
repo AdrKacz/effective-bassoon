@@ -35,6 +35,9 @@ export default $config({
 
     const umamiWebsiteId = new sst.Secret('UmamiWebsiteId')
 
+    const facebookConversionApiToken = new sst.Secret('FacebookConversionApiToken')
+    const facebookPixelId = new sst.Secret('FacebookPixelId')
+
     const bucket = new sst.aws.Bucket("Bucket")
 
     const table = new sst.aws.Dynamo("Table", {
@@ -45,13 +48,18 @@ export default $config({
     const auth = new sst.aws.Auth("Auth", {
       issuer: {
         handler: "auth/index.handler",
-        link: [table, googleClientID, googleClientSecret],
+        link: [table, googleClientID, googleClientSecret, facebookConversionApiToken, facebookPixelId],
       },
       domain: $app.stage === "production" ? `auth.${domain}` : undefined,
     })
 
     const hono = new sst.aws.Function("Hono", {
-      url: true,
+      url: {
+        cors: {
+          allowHeaders: ["Authorization", "Content-Type"],
+          allowOrigins: $app.stage === "production" ? [`https://${domain}`] : [`https://local.${domain}`],
+        }
+      },
       handler: "src/index.handler",
       link: [bucket, table, auth],
       timeout: "1 minute",

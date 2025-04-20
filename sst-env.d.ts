@@ -13,6 +13,14 @@ declare module "sst" {
       "name": string
       "type": "sst.aws.Bucket"
     }
+    "FacebookConversionApiToken": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "FacebookPixelId": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "GoogleClientID": {
       "type": "sst.sst.Secret"
       "value": string

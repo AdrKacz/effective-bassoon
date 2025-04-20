@@ -7,7 +7,6 @@ import { Jimp } from 'jimp'
 import { ddb, bucket } from "../../../clients";
 import { Context } from "hono";
 import { User } from '../../types'
-import { native } from "bun:sqlite";
 
 // Bedrock only supports Titan v2 in us-east-1 and us-west-2
 // https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html
