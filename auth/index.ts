@@ -54,12 +54,12 @@ async function getUser(id: string, args: any = {}, trackingData: TrackingData) {
         const eventRequest = (new EventRequest(Resource.FacebookConversionApiToken.value, Resource.FacebookPixelId.value))
             .setEvents(eventsData)
 
-        // try {
-        //     const response = await eventRequest.execute()
-        //     console.log("Response from Facebook Conversion API: ", response)
-        // } catch (error) {
-        //     console.error("Error sending event to Facebook Conversion API: ", error)
-        // }
+        try {
+            const response = await eventRequest.execute()
+            console.log("Response from Facebook Conversion API: ", response)
+        } catch (error) {
+            console.error("Error sending event to Facebook Conversion API: ", error)
+        }
     } catch (err: any) {
         if (err.name === 'ConditionalCheckFailedException') {
             console.log(`User already exists: ${id}`);
