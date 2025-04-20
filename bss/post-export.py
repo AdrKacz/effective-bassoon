@@ -20,6 +20,7 @@ def move_file(old_file_path, new_file_path):
     
 special_scripts = ["bs-init", "bold-and-dark"]
 move_file(os.path.join(folder_path, "assets/js/smart-forms.min.js"), os.path.join(folder_path, "assets/js/smart-forms.mjs"))
+move_file(os.path.join(folder_path, "assets/bootstrap/js/bootstrap.min.js"), os.path.join(folder_path, "assets/bootstrap/js/bootstrap.mjs"))
 for script in special_scripts:
     move_file(os.path.join(folder_path, "assets/js/" + script + ".js"), os.path.join(folder_path, "assets/js/" + script + ".mjs"))
 move_file(os.path.join(folder_path, "sitemap.xml"), os.path.join(folder_path, "public/sitemap.xml"))
@@ -58,6 +59,9 @@ for html_file in html_files:
     replace(html_file,
             r'<script\s+src="(.*)?smart-forms\.min\.js">',
             r'<script src="\1smart-forms.mjs" type="module">')
+    replace(html_file,
+            r'<script\s+src="(.*)?bootstrap\.min\.js">',
+            r'<script src="\1bootstrap.mjs" type="module">')
     for script in special_scripts:
         replace(html_file,
                 r'<script\s+src="(.*)?' + script + r'\.js">',

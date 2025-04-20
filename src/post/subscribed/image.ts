@@ -213,6 +213,9 @@ export async function postImage(c: Context<{ Variables: User }>) {
         return c.json({
             remaining_credits: user.Attributes?.remaining_credits?.value,
             url,
+            prompt: prompt,
+            ratio,
+            date: now,
         });
     } catch (error: any) {
         console.error(`ERROR: Can't invoke '${modelId}'. Reason: ${error.message}`);
