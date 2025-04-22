@@ -4,6 +4,9 @@
         <loc>https://le-studio-k.fr/404.html</loc>
     </url>
     <url>
+        <loc>https://le-studio-k.fr/cgu.html</loc>
+    </url>
+    <url>
         <loc>https://le-studio-k.fr/contacts.html</loc>
     </url>
     <url>
@@ -20,8 +23,5 @@
     </url>
     <url>
         <loc>https://le-studio-k.fr/studio.html</loc>
-    </url>
-    <url>
-        <loc>https://le-studio-k.fr/terms.html</loc>
     </url>
 </urlset>
