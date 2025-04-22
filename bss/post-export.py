@@ -13,6 +13,7 @@ folder_path = sys.argv[1]
 # Task 1: Rename the file
 def move_file(old_file_path, new_file_path):
     try:
+        os.makedirs(os.path.dirname(new_file_path), exist_ok=True)
         os.rename(old_file_path, new_file_path)
         print(f"File renamed: {old_file_path} -> {new_file_path}")
     except FileNotFoundError:
@@ -23,7 +24,7 @@ move_file(os.path.join(folder_path, "assets/js/smart-forms.min.js"), os.path.joi
 move_file(os.path.join(folder_path, "assets/bootstrap/js/bootstrap.min.js"), os.path.join(folder_path, "assets/bootstrap/js/bootstrap.mjs"))
 for script in special_scripts:
     move_file(os.path.join(folder_path, "assets/js/" + script + ".js"), os.path.join(folder_path, "assets/js/" + script + ".mjs"))
-move_file(os.path.join(folder_path, "sitemap.xml"), os.path.join(folder_path, "public/sitemap.xml"))
+move_file(os.path.join(folder_path, "sitemap.xml"), os.path.join(folder_path, "public", "sitemap.xml"))
 
 # Task 2: Replace script tag in HTML files
 html_files = []
