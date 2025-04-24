@@ -35,6 +35,7 @@ You can now **restart Firefox** to start using you brand new certificate. You ca
 
 ## Side tools
 - Remove backgrounds with https://www.remove.bg
+- Set up cookie banner https://playground.cookieconsent.orestbida.com/ (check https://github.com/orestbida/cookieconsent/discussions/523#discussioncomment-8645730)
 
 ## TODO
 Send email with invoice and link to manage subscription

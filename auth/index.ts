@@ -20,6 +20,34 @@ type TrackingData = {
     url: string;
 }
 
+async function trackOfflineEvent(id: string, trackingData: TrackingData) {
+    // Send event to Facebook Conversion API (this only runs for the first login, see the condition expression above)
+    const userData = (new UserData()).setEmail(id)
+    if (trackingData.ip) userData.setClientIpAddress(trackingData.ip);
+    if (trackingData.userAgent) userData.setClientUserAgent(trackingData.userAgent);
+    if (trackingData.cid) userData.setFbc(trackingData.cid);
+
+    const now = Math.floor(Date.now() / 1000);
+    const serverEvent = (new ServerEvent())
+        .setEventName('CompleteRegistration')
+        .setEventTime(now)
+        .setUserData(userData)
+        .setEventSourceUrl(trackingData.url)
+        .setActionSource('website')
+        .setEventId(`${now}.${id}`);
+
+    const eventsData = [serverEvent];
+    const eventRequest = (new EventRequest(Resource.FacebookConversionApiToken.value, Resource.FacebookPixelId.value))
+        .setEvents(eventsData)
+
+    try {
+        const response = await eventRequest.execute()
+        console.log("Response from Facebook Conversion API: ", response)
+    } catch (error) {
+        console.error("Error sending event to Facebook Conversion API: ", error)
+    }
+}
+
 async function getUser(id: string, args: any = {}, trackingData: TrackingData) {
     // Send put request to database, only put if user does not exist
     try {
@@ -34,32 +62,7 @@ async function getUser(id: string, args: any = {}, trackingData: TrackingData) {
             ConditionExpression: 'attribute_not_exists(pk) AND attribute_not_exists(sk)',
         }));
         console.log(`User created: ${id}`);
-
-        // Send event to Facebook Conversion API (this only runs for the first login, see the condition expression above)
-        const userData = (new UserData()).setEmail(id)
-        if (trackingData.ip) userData.setClientIpAddress(trackingData.ip);
-        if (trackingData.userAgent) userData.setClientUserAgent(trackingData.userAgent);
-        if (trackingData.cid) userData.setFbc(trackingData.cid);
-
-        const now = Math.floor(Date.now() / 1000);
-        const serverEvent = (new ServerEvent())
-            .setEventName('CompleteRegistration')
-            .setEventTime(now)
-            .setUserData(userData)
-            .setEventSourceUrl(trackingData.url)
-            .setActionSource('website')
-            .setEventId(`${now}.${id}`);
-
-        const eventsData = [serverEvent];
-        const eventRequest = (new EventRequest(Resource.FacebookConversionApiToken.value, Resource.FacebookPixelId.value))
-            .setEvents(eventsData)
-
-        try {
-            const response = await eventRequest.execute()
-            console.log("Response from Facebook Conversion API: ", response)
-        } catch (error) {
-            console.error("Error sending event to Facebook Conversion API: ", error)
-        }
+        // await trackOfflineEvent(id, trackingData);
     } catch (err: any) {
         if (err.name === 'ConditionalCheckFailedException') {
             console.log(`User already exists: ${id}`);
