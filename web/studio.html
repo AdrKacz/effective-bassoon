@@ -24,25 +24,9 @@
 <!-- Umami Code -->
 <script defer src="https://cloud.umami.is/script.js" data-website-id="%VITE_UMAMI_WEBSITE_ID%"></script>
 <!-- Umami Code -->
-<!-- Meta Pixel Code -->
-<script>
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '749773079472665');
-fbq('track', 'PageView');
-</script>
-<!-- End Meta Pixel Code -->
 </head>
 
-<body><noscript><img height="1" width="1" style="display:none"
-src="https://www.facebook.com/tr?id=749773079472665&ev=PageView&noscript=1"
-/></noscript>
+<body>
     <nav class="navbar navbar-expand-md sticky-top py-3 navbar-dark" id="mainNav">
         <div class="container"><a class="navbar-brand d-flex align-items-center" href="/"><span class="bs-icon-md bs-icon-circle bs-icon-white shadow d-flex justify-content-center align-items-center me-2 bs-icon"><img src="/assets/img/logo-120.png" width="60px" height="60px"></span></a><button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-1"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse" id="navcol-1">
@@ -51,7 +35,7 @@ src="https://www.facebook.com/tr?id=749773079472665&ev=PageView&noscript=1"
                     <li class="nav-item"><a class="nav-link active" href="/studio">Studio</a></li>
                     <li class="nav-item"><a class="nav-link" href="/galerie" display-condition="connected">Galerie</a></li>
                     <li class="nav-item"><a class="nav-link" href="/contacts">Contact</a></li>
-                </ul><a class="btn btn-primary shadow d-none" role="button" href="/studio" data-event="Log in" data-event-type="Navigation" display-condition="not connected">Se connecter</a><a class="btn btn-outline-primary shadow" role="button" id="logout" href="#" data-event="Log out" display-condition="connected">Se déconnecter</a>
+                </ul><a class="btn btn-primary shadow d-none" role="button" href="/studio" data-event="Log in" data-event-type="Navigation" display-condition="not connected" data-event-fb="Lead">Se connecter</a><a class="btn btn-outline-primary shadow" role="button" id="logout" href="#" data-event="Log out" display-condition="connected">Se déconnecter</a>
             </div>
         </div>
     </nav>
@@ -66,7 +50,7 @@ src="https://www.facebook.com/tr?id=749773079472665&ev=PageView&noscript=1"
                 <div class="col-12">
                     <p class="text-center" style="font-size: 1.6rem;">Commence ton essai&nbsp;<span class="text-success"><strong>gratuit</strong></span>&nbsp;maintenant</p>
                 </div>
-                <div class="col d-flex justify-content-center"><a class="btn btn-primary" role="button" data-event="Log in" data-event-type="Onboarding" href="/studio">Je me connecte avec mon compte Google</a></div>
+                <div class="col d-flex justify-content-center"><a class="btn btn-primary" role="button" data-event="Log in" data-event-type="Onboarding" href="/studio" data-event-fb="Lead">Je me connecte avec mon compte Google</a></div>
             </div>
             <div class="row">
                 <div class="col-md-6 d-flex flex-column justify-content-center order-last order-md-first">
