@@ -6,7 +6,7 @@ const REFRESH_TOKEN_KEY = 'refresh_token'
 const CHALLENGE_VERIFIER_KEY = 'challenge_verifier'
 const REDIRECT_URI_KEY = "redirect_uri"
 const USER_KEY = "user"
-const CLICK_ID_KEY = "click_id"
+// const CLICK_ID_KEY = "click_id"
 
 const client = createClient({
   clientID: "le-studio",
@@ -67,8 +67,8 @@ async function authenticate() {
 async function setup() {
     const params = new URLSearchParams(window.location.search)
     // Read fbclid and store it if any
-    const fbclid = params.get('fbclid')
-    if (typeof fbclid === "string") localStorage.setItem(CLICK_ID_KEY, `fb.1.${Date.now()}.${fbclid}`);
+    // const fbclid = params.get('fbclid')
+    // if (typeof fbclid === "string") localStorage.setItem(CLICK_ID_KEY, `fb.1.${Date.now()}.${fbclid}`);
     
     // Try to read code and state from query string
     const code = params.get('code')
@@ -77,12 +77,10 @@ async function setup() {
     const redirectUri = localStorage.getItem(REDIRECT_URI_KEY)
     
     // Clean URL
-    if (typeof fbclid === "string" || typeof code === "string" || typeof state === "string" || typeof params.get('cid') === "string") {
+    const parameters = ['code', 'state'];
+    if (parameters.some(param => params.has(param))) {
         const url = new URL(window.location.href);
-        url.searchParams.delete('fbclid');
-        url.searchParams.delete('code');
-        url.searchParams.delete('state');
-        url.searchParams.delete('cid'); // We don't need it
+        for (const param of params) url.searchParams.delete(param);
         window.history.replaceState({}, document.title, url.pathname + url.search);
     }
     
@@ -125,9 +123,9 @@ async function setup() {
         const redirectUri = window.location.origin + href;
         const { challenge, url } = await client.authorize(redirectUri, "code", { pkce: true });
         const urlObject = new URL(url);
-        if (typeof localStorage.getItem(CLICK_ID_KEY) === "string") {
-            urlObject.searchParams.set("state", btoa(JSON.stringify({ cid: localStorage.getItem(CLICK_ID_KEY) })));
-        }
+        // if (typeof localStorage.getItem(CLICK_ID_KEY) === "string") {
+        //     urlObject.searchParams.set("state", btoa(JSON.stringify({ cid: localStorage.getItem(CLICK_ID_KEY) })));
+        // }
         link.href = urlObject.toString();
         link.addEventListener('click', (event) => {
             localStorage.setItem(REDIRECT_URI_KEY, redirectUri);

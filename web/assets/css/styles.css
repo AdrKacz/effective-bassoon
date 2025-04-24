@@ -11,3 +11,17 @@
   pointer-events: auto;
 }
 
+#show-consent-modal:hover, #show-consent-modal:focus {
+  color: #fff;
+}
+
+#show-consent-modal {
+  color: rgb(176,189,211);
+  height: auto;
+  width: auto;
+  padding: 0px;
+  transform-origin: 0px 0px;
+  display: inline;
+  border-width: 0px;
+}
+

@@ -1,14 +1,13 @@
 diff --git a/node_modules/@openauthjs/openauth/dist/esm/provider/oauth2.js b/node_modules/@openauthjs/openauth/dist/esm/provider/oauth2.js
-index 166bab8..2c7e71d 100644
+index 166bab8..6d58c8b 100644
 --- a/node_modules/@openauthjs/openauth/dist/esm/provider/oauth2.js
 +++ b/node_modules/@openauthjs/openauth/dist/esm/provider/oauth2.js
-@@ -8,7 +8,8 @@ function Oauth2Provider(config) {
+@@ -8,6 +8,8 @@ function Oauth2Provider(config) {
      type: config.type || "oauth2",
      init(routes, ctx) {
        routes.get("/authorize", async (c) => {
--        const state = crypto.randomUUID();
-+        const auth = await ctx.get(c, "authorization");
-+        const state = auth?.state ?? crypto.randomUUID();
++        // const auth = await ctx.get(c, "authorization");
++        // const state = auth?.state ?? crypto.randomUUID();
+         const state = crypto.randomUUID();
          const pkce = config.pkce ? await generatePKCE() : undefined;
          await ctx.set(c, "provider", 60 * 10, {
-           state,

@@ -24,6 +24,25 @@
 <!-- Umami Code -->
 <script defer src="https://cloud.umami.is/script.js" data-website-id="%VITE_UMAMI_WEBSITE_ID%"></script>
 <!-- Umami Code -->
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-17026062763"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() { dataLayer.push(arguments); }
+    gtag('consent', 'default', {
+    'ad_user_data': 'denied',
+    'ad_personalization': 'denied',
+    'ad_storage': 'denied',
+    'analytics_storage': 'denied',
+    'wait_for_update': 500,
+  });
+  gtag('js', new Date());
+  gtag('config', 'AW-17026062763');
+</script>
+<!-- Google tag (gtag.js) -->
+<!-- Cookie consent stylesheet -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orestbida/cookieconsent@3.1.0/dist/cookieconsent.css">
+<!-- Cookie consent stylesheet -->
 </head>
 
 <body>
@@ -77,6 +96,7 @@
                     <ul class="list-unstyled">
                         <li><a href="/cgu">Conditions générales d'utilisation</a></li>
                         <li><a href="/policy">Politique de confidentialité</a></li>
+                        <li><button class="btn btn-link text-decoration-none" type="button" id="show-consent-modal" data-cc="show-consentModal" onclick="this.blur()">Voir mes préférences cookie</button></li>
                     </ul>
                 </div>
                 <div class="col-lg-3 text-center text-lg-start d-flex flex-column align-items-center order-first align-items-lg-start order-lg-last">
@@ -92,6 +112,7 @@
     </footer>
     <script src="/assets/bootstrap/js/bootstrap.mjs" type="module"></script>
     <script src="/assets/js/bold-and-dark.mjs" type="module"></script>
+    <script src="/assets/js/cookieconsent-config.mjs" type="module"></script>
     <script src="/assets/js/telemetry.mjs" type="module"></script>
     <script src="/assets/js/auth.mjs" type="module"></script>
 </body>
