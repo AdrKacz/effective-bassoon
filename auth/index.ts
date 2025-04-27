@@ -56,6 +56,8 @@ async function getUser(id: string, args: any = {}, trackingData: TrackingData) {
             Item: {
                 pk: `user#${id}`,
                 sk: 'metadata',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
                 remaining_credits: 5, // We give 5 free credits to new users (this only runs for the first login, see the condition expression below)
                 ...args,
             },

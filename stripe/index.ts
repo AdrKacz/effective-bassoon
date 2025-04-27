@@ -10,6 +10,7 @@ const updateExpression = `SET #stripe_subscription = :subscription,
 #stripe_customer = :stripe_customer,
 #stripe_customer_email = :stripe_customer_email,
 #stripe_customer_name = :stripe_customer_name
+#updated_at = :updated_at,
 ADD #remaining_credits :remaining_credits`
 
 const expressionAttributeNames: any = {
@@ -18,6 +19,7 @@ const expressionAttributeNames: any = {
     '#stripe_customer': 'stripe_customer',
     '#stripe_customer_email': 'stripe_customer_email',
     '#stripe_customer_name': 'stripe_customer_name',
+    '#updated_at': 'updated_at',
     '#remaining_credits': 'remaining_credits',
 }
 
@@ -99,6 +101,7 @@ app.post('/webhook', async (c) => {
                 ':stripe_customer': customer,
                 ':stripe_customer_email': customerEmail,
                 ':stripe_customer_name': customerName,
+                ':updated_at': new Date().toISOString(),
             }
             if (typeof customerPhone === 'string') {
                 expressionAttributeNames['#stripe_customer_phone'] = 'stripe_customer_phone'
