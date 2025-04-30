@@ -31,7 +31,7 @@ app.get('/pixel', async (c) => {
             url: '/pixel',
             website: UMAMI_WEBSITE_ID,
             name: `Open email (${title.trim().slice(0, 37)})`, // Max 50 chars (37 for the name + 13 for the rest)
-            data: { email, title },
+            data: { email },
         },
         type: 'event',
     }
