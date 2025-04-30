@@ -1,21 +1,16 @@
 import { Resource } from "sst";
 import { Hono } from 'hono'
 import { handle } from 'hono/aws-lambda'
-import { hostname } from "os";
-
-const PIXEL = Uint8Array.from(
-    atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQAAAAA3bvkkAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAACdFJOUwAAdpPNOAAAAAJiS0dEAAHdihOkAAAAB3RJTUUH6QQeCzkJw9S8eQAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjUtMDQtMzBUMTE6NTc6MDkrMDA6MDC7bQ1PAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDI1LTA0LTMwVDExOjU3OjA5KzAwOjAwyjC18wAAACh0RVh0ZGF0ZTp0aW1lc3RhbXAAMjAyNS0wNC0zMFQxMTo1NzowOSswMDowMJ0llCwAAAAASUVORK5CYII='),
-    c => c.charCodeAt(0)
-)
+import { LOGO } from "./logo";
 
 const UMAMI_WEBSITE_ID = Resource.UmamiWebsiteId.value
 const UMAMI_API_KEY = Resource.UmamiApiKey.value
 
 const app = new Hono()
 
-app.get('/pixel', async (c) => {
+app.get('/logo', async (c) => {
     const url = new URL(c.req.url)
-    const email = url.searchParams.get('from')
+    const email = url.searchParams.get('email')
     const title = url.searchParams.get('title')
 
     if (!email || !title) {
@@ -55,9 +50,9 @@ app.get('/pixel', async (c) => {
         console.error('Error sending telemetry data:', error) // Return the pixel anyway
     }
 
-    return c.body(PIXEL, 200, {
+    return c.body(LOGO, 200, {
         'Content-Type': 'image/png',
-        'Content-Length': PIXEL.length.toString(),
+        'Content-Length': LOGO.length.toString(),
         'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
         'Pragma': 'no-cache',
         'Expires': '0',
