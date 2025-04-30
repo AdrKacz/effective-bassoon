@@ -37,7 +37,14 @@ You can now **restart Firefox** to start using you brand new certificate. You ca
 - Remove backgrounds with https://www.remove.bg
 - Set up cookie banner https://playground.cookieconsent.orestbida.com/ (check https://github.com/orestbida/cookieconsent/discussions/523#discussioncomment-8645730)
 - To patch use, for example, `npm run patch @openauthjs/openauth`
+- Edit mail as HTML: https://stackoverflow.com/questions/48214386/insert-html-into-email-in-apple-mail
 
 ## TODO
 Send email with invoice and link to manage subscription
 Cancel on payment cancelled
+
+## Generate a transparent pixel
+
+1. `brew install imagemagick`
+2. `magick -size 1x1 xc:none transparent.png`
+3. `base64 -i transparent.png`

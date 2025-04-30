@@ -67,6 +67,15 @@ declare module "sst" {
       "name": string
       "type": "sst.aws.Dynamo"
     }
+    "Telemetry": {
+      "name": string
+      "type": "sst.aws.Function"
+      "url": string
+    }
+    "UmamiApiKey": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "UmamiWebsiteId": {
       "type": "sst.sst.Secret"
       "value": string

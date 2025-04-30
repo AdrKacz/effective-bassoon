@@ -34,6 +34,7 @@ export default $config({
     const stripeInspirationPaymentLink = new sst.Secret("StripeInspirationPaymentLink")
 
     const umamiWebsiteId = new sst.Secret('UmamiWebsiteId')
+    const umamiApiKey = new sst.Secret('UmamiApiKey')
 
     const facebookConversionApiToken = new sst.Secret('FacebookConversionApiToken')
     const facebookPixelId = new sst.Secret('FacebookPixelId')
@@ -51,6 +52,12 @@ export default $config({
         link: [table, googleClientID, googleClientSecret, facebookConversionApiToken, facebookPixelId],
       },
       domain: $app.stage === "production" ? `auth.${domain}` : undefined,
+    })
+
+    const telemetry = new sst.aws.Function("Telemetry", {
+      url: true,
+      handler: "telemetry/index.handler",
+      link: [umamiApiKey, umamiWebsiteId]
     })
 
     const hono = new sst.aws.Function("Hono", {
@@ -114,6 +121,7 @@ export default $config({
       web: web.url,
       auth: auth.url,
       stripe: stripe.url,
+      telemetry: telemetry.url,
     }
   }
 });
