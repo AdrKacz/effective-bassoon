@@ -21,9 +21,14 @@ app.get('/pixel', async (c) => {
         return c.text('Missing required parameters', 400)
     }
 
+    let hostname = 'le-studio-k.fr'
+    if (Resource.App.stage !== 'production') {
+        hostname = `local.${hostname}`
+    }
+
     const payload = {
         payload: {
-            hostname: 'local.le-studio-k.fr',
+            hostname,
             language: 'en-US',
             referrer: '',
             screen: '1920x1080',
@@ -37,6 +42,7 @@ app.get('/pixel', async (c) => {
     }
 
     try {
+        console.log('Sending telemetry data to Umami:', payload)
         const response = await fetch('https://cloud.umami.is/api/send', {
             method: 'POST',
             headers: {
